@@ -1,0 +1,6 @@
+*.tfstate
+*.tfstate.backup
+*.tfstate.backup*
+.terraform
+examples/terraform-provider-concourse
+terraform-provider-concourse
