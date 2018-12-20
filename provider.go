@@ -18,10 +18,12 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"concourse_pipeline": dataPipeline(),
+			"concourse_team":     dataTeam(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"concourse_pipeline": resourcePipeline(),
+			"concourse_team":     resourceTeam(),
 		},
 	}
 }
