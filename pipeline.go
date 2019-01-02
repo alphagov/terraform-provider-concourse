@@ -100,12 +100,13 @@ func resourcePipeline() *schema.Resource {
 }
 
 type pipelineHelper struct {
-	TeamName     string
-	PipelineName string
-	IsExposed    bool
-	IsPaused     bool
-	JSON         string
-	YAML         string
+	TeamName      string
+	PipelineName  string
+	IsExposed     bool
+	IsPaused      bool
+	JSON          string
+	YAML          string
+	ConfigVersion string
 }
 
 func pipelineID(teamName string, pipelineName string) string {
@@ -119,8 +120,9 @@ func readPipeline(
 ) (pipelineHelper, bool, error) {
 
 	retVal := pipelineHelper{
-		TeamName:     teamName,
-		PipelineName: pipelineName,
+		TeamName:      teamName,
+		PipelineName:  pipelineName,
+		ConfigVersion: "0",
 	}
 
 	team := client.Team(teamName)
@@ -135,7 +137,9 @@ func readPipeline(
 		return retVal, false, nil
 	}
 
-	_, pipelineCfg, _, pipelineCfgFound, err := team.PipelineConfig(pipelineName)
+	_, pipelineCfg, version, pipelineCfgFound, err := team.PipelineConfig(
+		pipelineName,
+	)
 
 	if err != nil {
 		return retVal, false, fmt.Errorf(
@@ -167,6 +171,7 @@ func readPipeline(
 
 	retVal.IsExposed = pipeline.Public
 	retVal.IsPaused = pipeline.Paused
+	retVal.ConfigVersion = version
 	retVal.JSON = pipelineCfgJSON
 	retVal.YAML = pipelineCfgYAML
 
@@ -241,17 +246,26 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	pipelineConfig := d.Get("pipeline_config").(string)
 	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
 
+	pipeline, _, err := readPipeline(client, teamName, pipelineName)
+
+	if err != nil {
+		return fmt.Errorf(
+			"Error looking up pipeline %s in team %s: %s",
+			pipelineName, teamName, err,
+		)
+	}
+
 	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
 
 	if err != nil {
 		return fmt.Errorf("Error parsing pipeline_config: %s", err)
 	}
 
-	_, not_created, configWarnings, err := team.CreateOrUpdatePipelineConfig(
-		pipelineName, "0", []byte(parsedJSON), false,
+	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
+		pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
 	)
 
-	if not_created {
+	if err != nil {
 		return fmt.Errorf(
 			"Encountered error setting config for pipeline %s in team '%s': %s",
 			pipelineName, teamName, err,
@@ -267,13 +281,6 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf(
 			"Encountered pipeline warnings (%s/%s):\n %s",
 			pipelineName, teamName, warnings,
-		)
-	}
-
-	if not_created {
-		return fmt.Errorf(
-			"Could not create/update pipeline %s in team %s",
-			pipelineName, teamName,
 		)
 	}
 
