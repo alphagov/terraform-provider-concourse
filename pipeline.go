@@ -116,7 +116,7 @@ func readPipeline(
 	client concourse.Client,
 	teamName string,
 	pipelineName string,
-) (pipelineHelper, error) {
+) (pipelineHelper, bool, error) {
 
 	retVal := pipelineHelper{
 		TeamName:     teamName,
@@ -128,34 +128,29 @@ func readPipeline(
 	pipeline, pipelineFound, err := team.Pipeline(pipelineName)
 
 	if err != nil {
-		return retVal, err
+		return retVal, false, err
 	}
 
 	if !pipelineFound {
-		return retVal, fmt.Errorf(
-			"Could not find pipeline %s within team %s", pipelineName, teamName,
-		)
+		return retVal, false, nil
 	}
 
 	_, pipelineCfg, _, pipelineCfgFound, err := team.PipelineConfig(pipelineName)
 
 	if err != nil {
-		return retVal, fmt.Errorf(
+		return retVal, false, fmt.Errorf(
 			"Error looking up pipeline %s within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
 
 	if !pipelineCfgFound {
-		return retVal, fmt.Errorf(
-			"No pipeline %s found within team %s",
-			pipelineName, teamName,
-		)
+		return retVal, false, nil
 	}
 
 	pipelineCfgJSON, err := JSONToJSON(string(pipelineCfg))
 	if err != nil {
-		return retVal, fmt.Errorf(
+		return retVal, false, fmt.Errorf(
 			"Encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
@@ -164,7 +159,7 @@ func readPipeline(
 	pipelineCfgYAML, err := JSONToYAML(pipelineCfgJSON)
 
 	if err != nil {
-		return retVal, fmt.Errorf(
+		return retVal, false, fmt.Errorf(
 			"Encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
@@ -175,7 +170,7 @@ func readPipeline(
 	retVal.JSON = pipelineCfgJSON
 	retVal.YAML = pipelineCfgYAML
 
-	return retVal, nil
+	return retVal, true, nil
 }
 
 func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
@@ -183,7 +178,7 @@ func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 
-	pipeline, err := readPipeline(client, teamName, pipelineName)
+	pipeline, wasFound, err := readPipeline(client, teamName, pipelineName)
 
 	if err != nil {
 		return fmt.Errorf(
@@ -192,11 +187,15 @@ func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
 		)
 	}
 
-	d.SetId(pipelineID(teamName, pipelineName))
-	d.Set("is_exposed", pipeline.IsExposed)
-	d.Set("is_paused", pipeline.IsPaused)
-	d.Set("json", pipeline.JSON)
-	d.Set("yaml", pipeline.YAML)
+	if wasFound {
+		d.SetId(pipelineID(teamName, pipelineName))
+		d.Set("is_exposed", pipeline.IsExposed)
+		d.Set("is_paused", pipeline.IsPaused)
+		d.Set("json", pipeline.JSON)
+		d.Set("yaml", pipeline.YAML)
+	} else {
+		d.SetId("")
+	}
 
 	return nil
 }
@@ -210,7 +209,7 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 
-	pipeline, err := readPipeline(client, teamName, pipelineName)
+	pipeline, wasFound, err := readPipeline(client, teamName, pipelineName)
 
 	if err != nil {
 		return fmt.Errorf(
@@ -219,11 +218,15 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 		)
 	}
 
-	d.SetId(pipelineID(teamName, pipelineName))
-	d.Set("is_exposed", pipeline.IsExposed)
-	d.Set("is_paused", pipeline.IsPaused)
-	d.Set("json", pipeline.JSON)
-	d.Set("yaml", pipeline.YAML)
+	if wasFound {
+		d.SetId(pipelineID(teamName, pipelineName))
+		d.Set("is_exposed", pipeline.IsExposed)
+		d.Set("is_paused", pipeline.IsPaused)
+		d.Set("json", pipeline.JSON)
+		d.Set("yaml", pipeline.YAML)
+	} else {
+		d.SetId("")
+	}
 
 	return nil
 }
