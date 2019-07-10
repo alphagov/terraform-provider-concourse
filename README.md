@@ -20,13 +20,11 @@ Install `go`, `glide`, and `terraform`.
 ## How to build and use
 
 ```
-cd terraform-provider-concourse
+git clone https://github.com/alphagov/terraform-provider-concourse $GOPATH/src/github.com/alphagov/terraform-provider-concourse
+cd $GOPATH/src/github.com/alphagov/terraform-provider-concourse
 glide install
 go build
-cp terraform-provider-concourse /path/to/my/project
-cd /path/to/my/project
-terraform init
-terraform apply
+cp terraform-provider-concourse ~/.terraform.d/plugins/darwin_amd64
 ```
 
 # Example `terraform`
