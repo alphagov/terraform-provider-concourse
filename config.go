@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/concourse/fly/rc"
-	"github.com/concourse/go-concourse/concourse"
+
+	"github.com/concourse/concourse/fly/rc"
+	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 

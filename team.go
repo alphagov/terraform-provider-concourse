@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/concourse/atc"
-	"github.com/concourse/go-concourse/concourse"
+
+	"github.com/concourse/concourse/atc"
+	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+var roleName = "owner"
 
 func dataTeam() *schema.Resource {
 	return &schema.Resource{
@@ -109,17 +112,27 @@ func readTeam(
 	}
 
 	var ok bool
-	var groups []string
-	if groups, ok = foundTeam.Auth["groups"]; !ok {
+	var role map[string][]string
+	if role, ok = foundTeam.Auth[roleName]; !ok {
 		return retVal, fmt.Errorf(
-			"Could not find groups field in team %s",
+			"Could not find any details for role %s in team %s",
+			roleName,
+			teamName,
+		)
+	}
+
+	var groups []string
+	if groups, ok = role["groups"]; !ok {
+		return retVal, fmt.Errorf(
+			"Could not find groups field for role %s in team %s",
+			roleName,
 			teamName,
 		)
 	}
 	retVal.Groups = groups
 
 	var users []string
-	if users, ok = foundTeam.Auth["users"]; !ok {
+	if users, ok = role["users"]; !ok {
 		return retVal, fmt.Errorf(
 			"Could not find users field in team %s",
 			teamName,
@@ -184,9 +197,11 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 
 	teamDetails := atc.Team{
 		Name: teamName,
-		Auth: map[string][]string{
-			"groups": groups,
-			"users":  users,
+		Auth: atc.TeamAuth{
+			roleName: map[string][]string{
+				"groups": groups,
+				"users":  users,
+			},
 		},
 	}
 
