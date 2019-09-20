@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/concourse/go-concourse/concourse"
+
+	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -137,7 +139,7 @@ func readPipeline(
 		return retVal, false, nil
 	}
 
-	_, pipelineCfg, version, pipelineCfgFound, err := team.PipelineConfig(
+	atcConfig, version, pipelineCfgFound, err := team.PipelineConfig(
 		pipelineName,
 	)
 
@@ -149,6 +151,11 @@ func readPipeline(
 	}
 
 	if !pipelineCfgFound {
+		return retVal, false, nil
+	}
+
+	pipelineCfg, err := json.Marshal(atcConfig)
+	if err != nil {
 		return retVal, false, nil
 	}
 
