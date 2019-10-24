@@ -2,13 +2,19 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/concourse/concourse/atc"
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-var roleName = "owner"
+var roleNames = []string{
+	"owner",
+	"member",
+	"pipeline-operator",
+	"viewer",
+}
 
 func dataTeam() *schema.Resource {
 	return &schema.Resource{
@@ -20,7 +26,7 @@ func dataTeam() *schema.Resource {
 				Required: true,
 			},
 
-			"groups": &schema.Schema{
+			"owners": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -28,7 +34,23 @@ func dataTeam() *schema.Resource {
 				},
 			},
 
-			"users": &schema.Schema{
+			"members": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
+			"pipeline_operators": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
+			"viewers": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Schema{
@@ -47,12 +69,13 @@ func resourceTeam() *schema.Resource {
 		Delete: resourceTeamDelete,
 
 		Schema: map[string]*schema.Schema{
+
 			"team_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"groups": &schema.Schema{
+			"owners": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -63,7 +86,29 @@ func resourceTeam() *schema.Resource {
 				},
 			},
 
-			"users": &schema.Schema{
+			"members": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					return make([]string, 0), nil
+				},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
+			"pipeline_operators": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					return make([]string, 0), nil
+				},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
+			"viewers": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -78,9 +123,24 @@ func resourceTeam() *schema.Resource {
 }
 
 type teamHelper struct {
-	TeamName string
-	Groups   []string
-	Users    []string
+	TeamName          string
+	Owners            []string
+	Members           []string
+	PipelineOperators []string
+	Viewers           []string
+}
+
+func (t *teamHelper) appendElem(field string, elem string) {
+	switch field {
+	case "owner":
+		t.Owners = append(t.Owners, elem)
+	case "member":
+		t.Members = append(t.Members, elem)
+	case "pipeline-operator":
+		t.PipelineOperators = append(t.PipelineOperators, elem)
+	case "viewer":
+		t.PipelineOperators = append(t.Viewers, elem)
+	}
 }
 
 func readTeam(
@@ -111,34 +171,49 @@ func readTeam(
 		return retVal, fmt.Errorf("Could not find team %s", teamName)
 	}
 
-	var ok bool
+	var ok, user_ok, group_ok bool
 	var role map[string][]string
-	if role, ok = foundTeam.Auth[roleName]; !ok {
-		return retVal, fmt.Errorf(
-			"Could not find any details for role %s in team %s",
-			roleName,
-			teamName,
-		)
-	}
-
 	var groups []string
-	if groups, ok = role["groups"]; !ok {
-		return retVal, fmt.Errorf(
-			"Could not find groups field for role %s in team %s",
-			roleName,
-			teamName,
-		)
-	}
-	retVal.Groups = groups
-
 	var users []string
-	if users, ok = role["users"]; !ok {
-		return retVal, fmt.Errorf(
-			"Could not find users field in team %s",
-			teamName,
-		)
+
+	for _, roleName := range roleNames {
+		if role, ok = foundTeam.Auth[roleName]; !ok {
+
+			// owner must exist
+			if roleName == "owner" {
+				return retVal, fmt.Errorf(
+					"Could not find any details for role %s in team %s",
+					roleName,
+					teamName,
+				)
+			}
+
+			continue
+		}
+
+		users, user_ok = role["users"]
+		groups, group_ok = role["groups"]
+
+		if !user_ok && !group_ok {
+			return retVal, fmt.Errorf(
+				"Could not find users or group field for role %s in team %s",
+				roleName,
+				teamName,
+			)
+		}
+
+		if user_ok {
+			for _, user := range users {
+				retVal.appendElem(roleName, "user:"+user)
+			}
+		}
+
+		if group_ok {
+			for _, group := range groups {
+				retVal.appendElem(roleName, "group:"+group)
+			}
+		}
 	}
-	retVal.Users = users
 
 	return retVal, nil
 }
@@ -154,9 +229,10 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(teamName)
-	d.Set("groups", team.Groups)
-	d.Set("users", team.Users)
-
+	d.Set("owners", team.Owners)
+	d.Set("members", team.Members)
+	d.Set("pipeline_operators", team.PipelineOperators)
+	d.Set("viewers", team.Viewers)
 	return nil
 }
 
@@ -175,8 +251,10 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(teamName)
-	d.Set("groups", team.Groups)
-	d.Set("users", team.Users)
+	d.Set("owners", team.Owners)
+	d.Set("members", team.Members)
+	d.Set("pipeline_operators", team.PipelineOperators)
+	d.Set("viewers", team.Viewers)
 
 	return nil
 }
@@ -184,23 +262,68 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
-	groups := make([]string, 0)
-	users := make([]string, 0)
+	auths := make(map[string][]string)
 
-	for _, group := range d.Get("groups").([]interface{}) {
-		groups = append(groups, group.(string))
+	var authline []string
+
+	for _, owners := range d.Get("owners").([]interface{}) {
+		authline = strings.Split(owners.(string), ":")
+		switch authline[0] {
+		case "user":
+			auths["owner_users"] = append(auths["owner_users"], strings.Join(authline[1:], ":"))
+		case "group":
+			auths["owner_groups"] = append(auths["owner_groups"], strings.Join(authline[1:], ":"))
+		}
 	}
 
-	for _, user := range d.Get("users").([]interface{}) {
-		users = append(users, user.(string))
+	for _, members := range d.Get("members").([]interface{}) {
+		authline = strings.Split(members.(string), ":")
+		switch authline[0] {
+		case "user":
+			auths["member_users"] = append(auths["member_users"], strings.Join(authline[1:], ":"))
+		case "group":
+			auths["member_groups"] = append(auths["member_groups"], strings.Join(authline[1:], ":"))
+		}
+	}
+
+	for _, pipelineOperators := range d.Get("pipeline_operators").([]interface{}) {
+		authline = strings.Split(pipelineOperators.(string), ":")
+		switch authline[0] {
+		case "user":
+			auths["pipeline_operator_users"] = append(auths["pipeline_operator_users"], strings.Join(authline[1:], ":"))
+		case "group":
+			auths["pipeline_operator_groups"] = append(auths["pipeline_operator_groups"], strings.Join(authline[1:], ":"))
+		}
+	}
+
+	for _, viewers := range d.Get("viewers").([]interface{}) {
+		authline = strings.Split(viewers.(string), ":")
+		switch authline[0] {
+		case "user":
+			auths["viewer_users"] = append(auths["viewer_users"], strings.Join(authline[1:], ":"))
+		case "group":
+			auths["viewer_groups"] = append(auths["viewer_groups"], strings.Join(authline[1:], ":"))
+		}
 	}
 
 	teamDetails := atc.Team{
 		Name: teamName,
 		Auth: atc.TeamAuth{
-			roleName: map[string][]string{
-				"groups": groups,
-				"users":  users,
+			"owner": map[string][]string{
+				"users":  auths["owner_users"],
+				"groups": auths["owner_groups"],
+			},
+			"member": map[string][]string{
+				"users":  auths["owner_users"],
+				"groups": auths["owner_groups"],
+			},
+			"pipeline-operator": map[string][]string{
+				"users":  auths["pipeline_operator_users"],
+				"groups": auths["pipeline_operator_groups"],
+			},
+			"viewer": map[string][]string{
+				"users":  auths["viewer_users"],
+				"groups": auths["viewer_groups"],
 			},
 		},
 	}
