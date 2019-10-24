@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/concourse/concourse/atc"
@@ -130,6 +131,13 @@ type teamHelper struct {
 	Viewers           []string
 }
 
+func (t *teamHelper) sort() {
+	sort.Strings(t.Owners)
+	sort.Strings(t.Members)
+	sort.Strings(t.PipelineOperators)
+	sort.Strings(t.Viewers)
+}
+
 func (t *teamHelper) appendElem(field string, elem string) {
 	switch field {
 	case "owner":
@@ -139,7 +147,7 @@ func (t *teamHelper) appendElem(field string, elem string) {
 	case "pipeline-operator":
 		t.PipelineOperators = append(t.PipelineOperators, elem)
 	case "viewer":
-		t.PipelineOperators = append(t.Viewers, elem)
+		t.Viewers = append(t.Viewers, elem)
 	}
 }
 
@@ -171,11 +179,8 @@ func readTeam(
 		return retVal, fmt.Errorf("Could not find team %s", teamName)
 	}
 
-	var ok, user_ok, group_ok bool
 	var role map[string][]string
-	var groups []string
-	var users []string
-
+	var ok bool
 	for _, roleName := range roleNames {
 		if role, ok = foundTeam.Auth[roleName]; !ok {
 
@@ -191,8 +196,8 @@ func readTeam(
 			continue
 		}
 
-		users, user_ok = role["users"]
-		groups, group_ok = role["groups"]
+		users, user_ok := role["users"]
+		groups, group_ok := role["groups"]
 
 		if !user_ok && !group_ok {
 			return retVal, fmt.Errorf(
@@ -215,6 +220,7 @@ func readTeam(
 		}
 	}
 
+	retVal.sort()
 	return retVal, nil
 }
 
@@ -255,7 +261,6 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("members", team.Members)
 	d.Set("pipeline_operators", team.PipelineOperators)
 	d.Set("viewers", team.Viewers)
-
 	return nil
 }
 
@@ -314,8 +319,8 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 				"groups": auths["owner_groups"],
 			},
 			"member": map[string][]string{
-				"users":  auths["owner_users"],
-				"groups": auths["owner_groups"],
+				"users":  auths["member_users"],
+				"groups": auths["member_groups"],
 			},
 			"pipeline-operator": map[string][]string{
 				"users":  auths["pipeline_operator_users"],
