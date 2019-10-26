@@ -33,6 +33,20 @@ provider "concourse" {
 }
 ```
 
+## Create a provider (using a local username and password)
+
+Note: this is not basic authentication
+
+```
+provider "concourse" {
+  url  = "https://wings.pivotal.io"
+  team = "main"
+
+  username = "localuser"
+  password = "very-secure-password"
+}
+```
+
 ## Look up a team
 
 ```
