@@ -3,6 +3,7 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -245,6 +246,25 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 
 func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*ProviderConfig).Client
+
+	if d.HasChange("team_name") && d.Id() != "" {
+		// Concourse does not yet have support for moving pipeline, so we should
+		// delete the pipeline from the old team
+
+		oldTeamName := strings.SplitN(d.Id(), ":", 2)[0]
+		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
+
+		team := client.Team(oldTeamName)
+		_, err := team.DeletePipeline(oldPipelineName)
+
+		if err != nil {
+			return fmt.Errorf(
+				"Error deleting old pipeline %s in team %s: %s",
+				oldPipelineName, oldTeamName, err,
+			)
+		}
+	}
+
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 	d.SetId(pipelineID(teamName, pipelineName))
