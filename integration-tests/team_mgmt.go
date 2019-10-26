@@ -20,7 +20,7 @@ var _ = Describe("User management", func() {
 	AfterEach(TeardownTest)
 	AfterSuite(TeardownSuite)
 
-	It("should create, update, and destroy users", func() {
+	It("should create, update, rename, and delete a team", func() {
 		providers := map[string]terraform.ResourceProvider{
 			"concourse": provider.Provider(),
 		}
