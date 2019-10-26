@@ -111,7 +111,10 @@ output "my_pipeline_yaml" {
 
 Supports `owners`, `members`, `pipeline_operators`, and `viewers`.
 
-User and groups are adopted by prefixing the strings with `user:` or `group:`.
+Specify users and groups by prefixing the strings:
+
+* `user:`
+* `group:`
 
 ```
 resource "concourse_team" "my_team" {
