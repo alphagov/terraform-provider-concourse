@@ -1,6 +1,6 @@
 module github.com/alphagov/terraform-provider-concourse
 
-go 1.12
+go 1.13
 
 require (
 	github.com/concourse/concourse v5.5.1+incompatible
