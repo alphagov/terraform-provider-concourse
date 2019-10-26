@@ -9,10 +9,6 @@ A terraform provider for concourse
 `fly` is an amazing tool, but configuration using scripts running fly is not
 ideal.
 
-## Disclaimer
-
-This is an incredibly early piece of software and should not be relied upon for production use.
-
 ## Prerequisites
 
 Install `go`, `glide`, and `terraform`.
