@@ -265,6 +265,23 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	if d.HasChange("pipeline_name") && !d.HasChange("team_name") && d.Id() != "" {
+		teamName := strings.SplitN(d.Id(), ":", 2)[0]
+		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
+		newPipelineName := d.Get("pipeline_name").(string)
+
+		team := client.Team(teamName)
+
+		_, err := team.RenamePipeline(oldPipelineName, newPipelineName)
+
+		if err != nil {
+			return fmt.Errorf(
+				"Error renaming pipeline %s to %s in team %s: %s",
+				oldPipelineName, newPipelineName, teamName, err,
+			)
+		}
+	}
+
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 	d.SetId(pipelineID(teamName, pipelineName))
