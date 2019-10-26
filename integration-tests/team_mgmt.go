@@ -15,12 +15,10 @@ import (
 )
 
 var _ = Describe("Team management", func() {
-	BeforeSuite(SetupSuite)
 	BeforeEach(SetupTest)
 	AfterEach(TeardownTest)
-	AfterSuite(TeardownSuite)
 
-	It("should create, update, rename, and delete a team", func() {
+	It("should manage the lifecycle of a team", func() {
 		providers := map[string]terraform.ResourceProvider{
 			"concourse": provider.Provider(),
 		}
