@@ -48,12 +48,20 @@ output "my_team_name" {
   value = "${data.concourse_team.my_team.team_name}"
 }
 
-output "my_team_groups" {
-  value = "${data.concourse_team.my_team.groups}"
+output "my_team_owners" {
+  value = "${data.concourse_team.my_team.owners}"
 }
 
-output "my_team_users" {
-  value = "${data.concourse_team.my_team.users}"
+output "my_team_members" {
+  value = "${data.concourse_team.my_team.members}"
+}
+
+output "my_team_pipeline_operators" {
+  value = "${data.concourse_team.my_team.pipeline_operators}"
+}
+
+output "my_team_viewers" {
+  value = "${data.concourse_team.my_team.viewers}"
 }
 ```
 
@@ -91,17 +99,22 @@ output "my_pipeline_yaml" {
 ```
 ## Create a team
 
+Supports `owners`, `members`, `pipeline_operators`, and `viewers`.
+
+User and groups are adopted by prefixing the strings with `user:` or `group:`.
+
 ```
 resource "concourse_team" "my_team" {
   team_name = "my-team"
 
-  groups = [
-    "github:org-name",
-    "github:org-name:team-name",
+  owners = [
+    "group:github:org-name",
+    "group:github:org-name:team-name",
+    "user:github:tlwr",
   ]
 
-  users = [
-    "github:tlwr",
+  viewers = [
+    "user:github:samrees"
   ]
 }
 ```
