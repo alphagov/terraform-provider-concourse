@@ -194,6 +194,61 @@ var _ = Describe("User management", func() {
 				},
 
 				resource.TestStep{
+					// Rename the team
+
+					Config: `resource "concourse_team" "a_team" {
+									   team_name = "team-a-renamed"
+
+										 pipeline_operators = ["user:github:tlwr"]
+									}`,
+
+					Check: resource.ComposeTestCheckFunc(
+						func(s *terraform.State) error {
+							By("Renaming the team")
+
+							fmt.Printf("%+v\n", s)
+							return nil
+						},
+
+						resource.TestCheckResourceAttr("concourse_team.a_team", "team_name", "team-a-renamed"),
+
+						resource.TestCheckResourceAttr("concourse_team.a_team", "owners.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "members.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "pipeline_operators.#", "1"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "pipeline_operators.0", "user:github:tlwr"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "viewers.#", "0"),
+
+						func(s *terraform.State) error {
+							teams, err := client.ListTeams()
+
+							if err != nil {
+								return nil
+							}
+
+							Expect(teams).To(HaveLen(2))
+
+							Expect(teams[0].Name).To(Equal("main"))
+							Expect(teams[1].Name).To(Equal("team-a-renamed"))
+
+							expectedTeamAuth := atc.TeamAuth{
+								"member": {"groups": nil, "users": nil},
+								"owner":  {"groups": nil, "users": nil},
+								"viewer": {"groups": nil, "users": nil},
+
+								"pipeline-operator": {
+									"groups": nil,
+									"users":  {"github:tlwr"},
+								},
+							}
+
+							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
+
+							return nil
+						},
+					),
+				},
+
+				resource.TestStep{
 					// Delete the team
 
 					Config: `# Cannot be empty`,
