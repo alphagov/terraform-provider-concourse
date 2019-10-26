@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-var _ = Describe("User management", func() {
+var _ = Describe("Team management", func() {
 	BeforeSuite(SetupSuite)
 	BeforeEach(SetupTest)
 	AfterEach(TeardownTest)
@@ -121,14 +121,10 @@ var _ = Describe("User management", func() {
 							Expect(teams[1].Name).To(Equal("team-a"))
 
 							expectedTeamAuth := atc.TeamAuth{
+								"owner":             {"groups": nil, "users": {"github:tlwr"}},
 								"member":            {"groups": nil, "users": nil},
 								"pipeline-operator": {"groups": nil, "users": nil},
 								"viewer":            {"groups": nil, "users": nil},
-
-								"owner": {
-									"groups": nil,
-									"users":  {"github:tlwr"},
-								},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
@@ -176,14 +172,61 @@ var _ = Describe("User management", func() {
 							Expect(teams[1].Name).To(Equal("team-a"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"member": {"groups": nil, "users": nil},
-								"owner":  {"groups": nil, "users": nil},
-								"viewer": {"groups": nil, "users": nil},
+								"owner":             {"groups": nil, "users": nil},
+								"member":            {"groups": nil, "users": nil},
+								"pipeline-operator": {"groups": nil, "users": {"github:tlwr"}},
+								"viewer":            {"groups": nil, "users": nil},
+							}
 
-								"pipeline-operator": {
-									"groups": nil,
-									"users":  {"github:tlwr"},
-								},
+							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
+
+							return nil
+						},
+					),
+				},
+
+				resource.TestStep{
+					// Removing a user, adding a group
+
+					Config: `resource "concourse_team" "a_team" {
+									   team_name = "team-a"
+
+										 owners = ["group:github:alphagov:paas-team"]
+									}`,
+
+					Check: resource.ComposeTestCheckFunc(
+						func(s *terraform.State) error {
+							By("Removing a user, adding a group")
+
+							fmt.Printf("%+v\n", s)
+							return nil
+						},
+
+						resource.TestCheckResourceAttr("concourse_team.a_team", "team_name", "team-a"),
+
+						resource.TestCheckResourceAttr("concourse_team.a_team", "owners.#", "1"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "owners.0", "group:github:alphagov:paas-team"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "members.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "pipeline_operators.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.a_team", "viewers.#", "0"),
+
+						func(s *terraform.State) error {
+							teams, err := client.ListTeams()
+
+							if err != nil {
+								return nil
+							}
+
+							Expect(teams).To(HaveLen(2))
+
+							Expect(teams[0].Name).To(Equal("main"))
+							Expect(teams[1].Name).To(Equal("team-a"))
+
+							expectedTeamAuth := atc.TeamAuth{
+								"owner":             {"groups": {"github:alphagov:paas-team"}, "users": nil},
+								"member":            {"groups": nil, "users": nil},
+								"pipeline-operator": {"groups": nil, "users": nil},
+								"viewer":            {"groups": nil, "users": nil},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
@@ -231,14 +274,10 @@ var _ = Describe("User management", func() {
 							Expect(teams[1].Name).To(Equal("team-a-renamed"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"member": {"groups": nil, "users": nil},
-								"owner":  {"groups": nil, "users": nil},
-								"viewer": {"groups": nil, "users": nil},
-
-								"pipeline-operator": {
-									"groups": nil,
-									"users":  {"github:tlwr"},
-								},
+								"owner":             {"groups": nil, "users": nil},
+								"member":            {"groups": nil, "users": nil},
+								"pipeline-operator": {"groups": nil, "users": {"github:tlwr"}},
+								"viewer":            {"groups": nil, "users": nil},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
