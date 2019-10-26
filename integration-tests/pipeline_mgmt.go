@@ -327,6 +327,70 @@ jobs:
 				},
 
 				resource.TestStep{
+					// Move a pipeline from one team to another
+
+					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
+                     team_name = "main"
+                   }
+
+                   resource "concourse_team" "other_team" {
+                     team_name = "other"
+                   }
+
+                   resource "concourse_pipeline" "a_pipeline" {
+                      team_name     = "${concourse_team.other_team.team_name}"
+                      pipeline_name = "pipeline-a"
+
+                      is_exposed = false
+                      is_paused  = false
+
+                      pipeline_config_format = "yaml"
+                      pipeline_config        = <<PIPELINE
+%s
+                      PIPELINE
+                   }`, updatedPipelineConfig),
+
+					Check: resource.ComposeTestCheckFunc(
+						func(s *terraform.State) error {
+							By("Moving the pipeline from one team to another")
+
+							fmt.Printf("%+v\n", s)
+							return nil
+						},
+
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "pipeline_name", "pipeline-a"),
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "team_name", "other"),
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "is_exposed", "false"),
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "is_paused", "false"),
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "json", updatedPipelineConfigJSON),
+
+						func(s *terraform.State) error {
+							teams, err := client.ListTeams()
+
+							if err != nil {
+								return nil
+							}
+
+							Expect(teams).To(HaveLen(2))
+
+							Expect(teams[0].Name).To(Equal("main"))
+							Expect(teams[1].Name).To(Equal("other"))
+
+							pipelines, err := client.ListPipelines()
+							Expect(err).NotTo(HaveOccurred())
+							Expect(pipelines).To(HaveLen(1))
+
+							Expect(pipelines[0].Name).To(Equal("pipeline-a"))
+							Expect(pipelines[0].TeamName).To(Equal("other"))
+							Expect(pipelines[0].Paused).To(Equal(false))
+							Expect(pipelines[0].Public).To(Equal(false))
+
+							return nil
+						},
+					),
+				},
+
+				resource.TestStep{
 					// Delete the pipeline
 
 					Config: `data "concourse_team" "main_team" {
