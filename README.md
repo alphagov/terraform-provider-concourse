@@ -9,10 +9,6 @@ A terraform provider for concourse
 `fly` is an amazing tool, but configuration using scripts running fly is not
 ideal.
 
-## Disclaimer
-
-This is an incredibly early piece of software and should not be relied upon for production use.
-
 ## Prerequisites
 
 Install `go`, `glide`, and `terraform`.
@@ -34,6 +30,20 @@ cp terraform-provider-concourse ~/.terraform.d/plugins/darwin_amd64
 ```
 provider "concourse" {
   target = "target_name"
+}
+```
+
+## Create a provider (using a local username and password)
+
+Note: this is not basic authentication
+
+```
+provider "concourse" {
+  url  = "https://wings.pivotal.io"
+  team = "main"
+
+  username = "localuser"
+  password = "very-secure-password"
 }
 ```
 
@@ -101,7 +111,10 @@ output "my_pipeline_yaml" {
 
 Supports `owners`, `members`, `pipeline_operators`, and `viewers`.
 
-User and groups are adopted by prefixing the strings with `user:` or `group:`.
+Specify users and groups by prefixing the strings:
+
+* `user:`
+* `group:`
 
 ```
 resource "concourse_team" "my_team" {

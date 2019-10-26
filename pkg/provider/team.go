@@ -1,4 +1,4 @@
-package main
+package provider
 
 import (
 	"fmt"
@@ -334,6 +334,14 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	team := client.Team(teamName)
+
+	if d.HasChange("team_name") {
+		_, err := team.RenameTeam(d.Id(), d.Get("team_name").(string))
+
+		if err != nil {
+			return fmt.Errorf("Could not rename team %s", teamName)
+		}
+	}
 
 	_, created, updated, err := team.CreateOrUpdate(teamDetails)
 
