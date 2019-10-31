@@ -17,6 +17,11 @@ var roleNames = []string{
 	"viewer",
 }
 
+var roleTypes = []string{
+	"users",
+	"groups",
+}
+
 func dataTeam() *schema.Resource {
 	return &schema.Resource{
 		Read: dataTeamRead,
@@ -270,8 +275,10 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	auths := make(map[string][]string)
 
 	var authline []string
+	roleEnabled := make(map[string]bool)
 
 	for _, owners := range d.Get("owners").([]interface{}) {
+		roleEnabled["owner"] = true
 		authline = strings.Split(owners.(string), ":")
 		switch authline[0] {
 		case "user":
@@ -282,6 +289,7 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	for _, members := range d.Get("members").([]interface{}) {
+		roleEnabled["member"] = true
 		authline = strings.Split(members.(string), ":")
 		switch authline[0] {
 		case "user":
@@ -292,6 +300,7 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	for _, pipelineOperators := range d.Get("pipeline_operators").([]interface{}) {
+		roleEnabled["pipeline-operator"] = true
 		authline = strings.Split(pipelineOperators.(string), ":")
 		switch authline[0] {
 		case "user":
@@ -302,6 +311,7 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	for _, viewers := range d.Get("viewers").([]interface{}) {
+		roleEnabled["viewer"] = true
 		authline = strings.Split(viewers.(string), ":")
 		switch authline[0] {
 		case "user":
@@ -313,24 +323,21 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 
 	teamDetails := atc.Team{
 		Name: teamName,
-		Auth: atc.TeamAuth{
-			"owner": map[string][]string{
-				"users":  auths["owner_users"],
-				"groups": auths["owner_groups"],
-			},
-			"member": map[string][]string{
-				"users":  auths["member_users"],
-				"groups": auths["member_groups"],
-			},
-			"pipeline-operator": map[string][]string{
-				"users":  auths["pipeline_operator_users"],
-				"groups": auths["pipeline_operator_groups"],
-			},
-			"viewer": map[string][]string{
-				"users":  auths["viewer_users"],
-				"groups": auths["viewer_groups"],
-			},
-		},
+		Auth: atc.TeamAuth{},
+	}
+
+	// we cant set a role name into the TeamAuth if it doesnt exist
+	// otherwise sending the team to concourse creates "role": null entries
+	for _, role := range roleNames {
+		if roleEnabled[role] == true {
+			teamDetails.Auth[role] = map[string][]string{}
+			for _, roleType := range roleTypes {
+				roleValues := auths[strings.ReplaceAll(role, "-", "_")+"_"+roleType]
+				if len(roleValues) > 0 {
+					teamDetails.Auth[role][roleType] = userValues
+				}
+			}
+		}
 	}
 
 	team := client.Team(teamName)
