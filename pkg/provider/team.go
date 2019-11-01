@@ -277,47 +277,21 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 	var authline []string
 	roleEnabled := make(map[string]bool)
 
-	for _, owners := range d.Get("owners").([]interface{}) {
-		roleEnabled["owner"] = true
-		authline = strings.Split(owners.(string), ":")
-		switch authline[0] {
-		case "user":
-			auths["owner_users"] = append(auths["owner_users"], strings.Join(authline[1:], ":"))
-		case "group":
-			auths["owner_groups"] = append(auths["owner_groups"], strings.Join(authline[1:], ":"))
-		}
-	}
+	// fetches input from terraform and breaks out user/groups that prepend the string
+	for _, role := range roleNames {
 
-	for _, members := range d.Get("members").([]interface{}) {
-		roleEnabled["member"] = true
-		authline = strings.Split(members.(string), ":")
-		switch authline[0] {
-		case "user":
-			auths["member_users"] = append(auths["member_users"], strings.Join(authline[1:], ":"))
-		case "group":
-			auths["member_groups"] = append(auths["member_groups"], strings.Join(authline[1:], ":"))
-		}
-	}
+		// concourse calls things: "pipeline-operator", terraform calls them: "pipeline_operators"
+		terraformRoleName := strings.ReplaceAll(role, "-", "_") + "s"
 
-	for _, pipelineOperators := range d.Get("pipeline_operators").([]interface{}) {
-		roleEnabled["pipeline-operator"] = true
-		authline = strings.Split(pipelineOperators.(string), ":")
-		switch authline[0] {
-		case "user":
-			auths["pipeline_operator_users"] = append(auths["pipeline_operator_users"], strings.Join(authline[1:], ":"))
-		case "group":
-			auths["pipeline_operator_groups"] = append(auths["pipeline_operator_groups"], strings.Join(authline[1:], ":"))
-		}
-	}
-
-	for _, viewers := range d.Get("viewers").([]interface{}) {
-		roleEnabled["viewer"] = true
-		authline = strings.Split(viewers.(string), ":")
-		switch authline[0] {
-		case "user":
-			auths["viewer_users"] = append(auths["viewer_users"], strings.Join(authline[1:], ":"))
-		case "group":
-			auths["viewer_groups"] = append(auths["viewer_groups"], strings.Join(authline[1:], ":"))
+		for _, terraformInput := range d.Get(terraformRoleName).([]interface{}) {
+			roleEnabled[role] = true
+			authline = strings.Split(terraformInput.(string), ":")
+			switch authline[0] {
+			case "user":
+				auths[role+"_users"] = append(auths[role+"_users"], strings.Join(authline[1:], ":"))
+			case "group":
+				auths[role+"_groups"] = append(auths[role+"_groups"], strings.Join(authline[1:], ":"))
+			}
 		}
 	}
 
@@ -326,15 +300,15 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		Auth: atc.TeamAuth{},
 	}
 
-	// we cant set a role name into the TeamAuth if it doesnt exist
-	// otherwise sending the team to concourse creates "role": null entries
+	// we cant set a role into the TeamAuth struct if it doesnt exist
+	// otherwise sending the atc.Team to concourse creates "role": null entries
 	for _, role := range roleNames {
 		if roleEnabled[role] == true {
 			teamDetails.Auth[role] = map[string][]string{}
 			for _, roleType := range roleTypes {
-				roleValues := auths[strings.ReplaceAll(role, "-", "_")+"_"+roleType]
+				roleValues := auths[role+"_"+roleType]
 				if len(roleValues) > 0 {
-					teamDetails.Auth[role][roleType] = userValues
+					teamDetails.Auth[role][roleType] = roleValues
 				}
 			}
 		}
