@@ -11,16 +11,19 @@ ideal.
 
 ## Prerequisites
 
-Install `go`, `glide`, and `terraform`.
+Install `go`, and `terraform`.
 
-## How to build and use
+## How to install and use
 
 ```
-git clone https://github.com/alphagov/terraform-provider-concourse $GOPATH/src/github.com/alphagov/terraform-provider-concourse
-cd $GOPATH/src/github.com/alphagov/terraform-provider-concourse
-glide install
-go build
-cp terraform-provider-concourse ~/.terraform.d/plugins/darwin_amd64
+make install
+```
+
+## How to build and test for development
+
+```
+make
+make integration-tests
 ```
 
 # Example `terraform`
