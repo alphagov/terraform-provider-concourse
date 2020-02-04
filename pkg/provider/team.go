@@ -184,33 +184,18 @@ func readTeam(
 		return retVal, fmt.Errorf("Could not find team %s", teamName)
 	}
 
-	var role map[string][]string
-	var ok bool
+	var (
+		ok   bool
+		role map[string][]string
+	)
+
 	for _, roleName := range roleNames {
 		if role, ok = foundTeam.Auth[roleName]; !ok {
-
-			// owner must exist
-			if roleName == "owner" {
-				return retVal, fmt.Errorf(
-					"Could not find any details for role %s in team %s",
-					roleName,
-					teamName,
-				)
-			}
-
 			continue
 		}
 
 		users, user_ok := role["users"]
 		groups, group_ok := role["groups"]
-
-		if !user_ok && !group_ok {
-			return retVal, fmt.Errorf(
-				"Could not find users or group field for role %s in team %s",
-				roleName,
-				teamName,
-			)
-		}
 
 		if user_ok {
 			for _, user := range users {
