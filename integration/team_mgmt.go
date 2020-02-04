@@ -67,14 +67,7 @@ var _ = Describe("Team management", func() {
 							Expect(teams[0].Name).To(Equal("main"))
 							Expect(teams[1].Name).To(Equal("team-a"))
 
-							expectedTeamAuth := atc.TeamAuth{
-								"owner":             {"groups": nil, "users": nil},
-								"member":            {"groups": nil, "users": nil},
-								"pipeline-operator": {"groups": nil, "users": nil},
-								"viewer":            {"groups": nil, "users": nil},
-							}
-
-							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
+							Expect(teams[1].Auth).To(BeNil())
 
 							return nil
 						},
@@ -119,10 +112,7 @@ var _ = Describe("Team management", func() {
 							Expect(teams[1].Name).To(Equal("team-a"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"owner":             {"groups": nil, "users": {"github:tlwr"}},
-								"member":            {"groups": nil, "users": nil},
-								"pipeline-operator": {"groups": nil, "users": nil},
-								"viewer":            {"groups": nil, "users": nil},
+								"owner": {"users": {"github:tlwr"}},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
@@ -170,10 +160,7 @@ var _ = Describe("Team management", func() {
 							Expect(teams[1].Name).To(Equal("team-a"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"owner":             {"groups": nil, "users": nil},
-								"member":            {"groups": nil, "users": nil},
-								"pipeline-operator": {"groups": nil, "users": {"github:tlwr"}},
-								"viewer":            {"groups": nil, "users": nil},
+								"pipeline-operator": {"users": {"github:tlwr"}},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
@@ -221,10 +208,7 @@ var _ = Describe("Team management", func() {
 							Expect(teams[1].Name).To(Equal("team-a"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"owner":             {"groups": {"github:alphagov:paas-team"}, "users": nil},
-								"member":            {"groups": nil, "users": nil},
-								"pipeline-operator": {"groups": nil, "users": nil},
-								"viewer":            {"groups": nil, "users": nil},
+								"owner": {"groups": {"github:alphagov:paas-team"}},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
@@ -272,10 +256,7 @@ var _ = Describe("Team management", func() {
 							Expect(teams[1].Name).To(Equal("team-a-renamed"))
 
 							expectedTeamAuth := atc.TeamAuth{
-								"owner":             {"groups": nil, "users": nil},
-								"member":            {"groups": nil, "users": nil},
-								"pipeline-operator": {"groups": nil, "users": {"github:tlwr"}},
-								"viewer":            {"groups": nil, "users": nil},
+								"pipeline-operator": {"users": {"github:tlwr"}},
 							}
 
 							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
