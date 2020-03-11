@@ -30,7 +30,7 @@ make integration-tests
 
 ## Create a provider (using target from fly)
 
-```
+```hcl
 provider "concourse" {
   target = "target_name"
 }
@@ -40,7 +40,7 @@ provider "concourse" {
 
 Note: this is not basic authentication
 
-```
+```hcl
 provider "concourse" {
   url  = "https://wings.pivotal.io"
   team = "main"
@@ -52,7 +52,7 @@ provider "concourse" {
 
 ## Look up a team
 
-```
+```hcl
 data "concourse_team" "my_team" {
   team_name = "main"
 }
@@ -80,7 +80,7 @@ output "my_team_viewers" {
 
 ## Look up a pipeline
 
-```
+```hcl
 data "concourse_pipeline" "my_pipeline" {
   team_name     = "main"
   pipeline_name = "pipeline"
@@ -119,7 +119,7 @@ Specify users and groups by prefixing the strings:
 * `user:`
 * `group:`
 
-```
+```hcl
 resource "concourse_team" "my_team" {
   team_name = "my-team"
 
@@ -136,7 +136,8 @@ resource "concourse_team" "my_team" {
 ```
 
 ## Create a pipeline
-```
+
+```hcl
 resource "concourse_pipeline" "my_pipeline" {
   team_name     = "main"
   pipeline_name = "my-pipeline"
