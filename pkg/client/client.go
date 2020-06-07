@@ -2,9 +2,9 @@ package client
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/concourse/concourse/skymarshal/token"
 	"golang.org/x/oauth2"
 )
 
@@ -16,33 +16,23 @@ func NewConcourseClient(
 	username string, password string,
 ) (concourse.Client, error) {
 
-	client := concourse.NewClient(url, &http.Client{}, false)
-
-	o2cfg := oauth2.Config{
+	oauth2Config := oauth2.Config{
 		ClientID:     "fly",
 		ClientSecret: "Zmx5",
 
-		Endpoint: oauth2.Endpoint{TokenURL: client.URL() + "/sky/token"},
+		Endpoint: oauth2.Endpoint{TokenURL: url + "/sky/issuer/token"},
 		Scopes:   []string{"email", "federated:id", "groups", "openid", "profile"},
 	}
 
-	ctx := context.WithValue(
-		context.Background(),
-		oauth2.HTTPClient, client.HTTPClient(),
-	)
+	ctx := context.Background()
 
-	tok, err := o2cfg.PasswordCredentialsToken(ctx, username, password)
-
+	tok, err := oauth2Config.PasswordCredentialsToken(ctx, username, password)
 	if err != nil {
 		return nil, err
 	}
+	tokenSource := oauth2.StaticTokenSource(tok)
+	idTokenSource := token.NewTokenSource(tokenSource)
+	httpClient := oauth2.NewClient(ctx, idTokenSource)
 
-	return concourse.NewClient(
-		url,
-		&http.Client{
-			Transport: AuthenticatedTransport{
-				AccessToken: tok.AccessToken,
-				TokenType:   tok.TokenType,
-			},
-		}, false), nil
+	return concourse.NewClient(url, httpClient, false), nil
 }

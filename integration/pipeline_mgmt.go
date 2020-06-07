@@ -74,11 +74,12 @@ jobs:
 					// Add a pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -138,11 +139,12 @@ jobs:
 					// Pause and expose the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -202,11 +204,12 @@ jobs:
 					// Unpause and hide the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -266,11 +269,12 @@ jobs:
 					// Update the pipeline configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -330,11 +334,12 @@ jobs:
 					// Move a pipeline from one team to another
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -394,11 +399,12 @@ jobs:
 					// Rename the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }
 
                    resource "concourse_pipeline" "a_pipeline" {
@@ -458,11 +464,12 @@ jobs:
 					// Delete the pipeline
 
 					Config: `data "concourse_team" "main_team" {
-                     team_name = "main"
+					 team_name = "main"
                    }
 
                    resource "concourse_team" "other_team" {
-                     team_name = "other"
+					 team_name = "other"
+					 owners = ["user:github:tlwr"]
                    }`,
 
 					Check: resource.ComposeTestCheckFunc(

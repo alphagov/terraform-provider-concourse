@@ -83,7 +83,7 @@ func resourceTeam() *schema.Resource {
 
 			"owners": &schema.Schema{
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				DefaultFunc: func() (interface{}, error) {
 					return make([]string, 0), nil
 				},
