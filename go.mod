@@ -1,6 +1,6 @@
 module github.com/alphagov/terraform-provider-concourse
 
-go 1.13
+go 1.14
 
 require (
 	github.com/concourse/concourse v1.6.1-0.20200528210921-72c7cdad6f2e
