@@ -72,7 +72,7 @@ func SetupTest() {
 
 		fmt.Println("Concourse is ready")
 		return nil
-	}, "60s", "3s").ShouldNot(HaveOccurred())
+	}, "180s", "3s").ShouldNot(HaveOccurred())
 }
 
 func TeardownTest() {
