@@ -16,4 +16,5 @@ install: terraform-provider-concourse
 
 .PHONY: integration-tests
 integration-tests:
+	@sh keys/generate
 	go test -count 1 -v ./integration

@@ -34,53 +34,11 @@ var _ = Describe("Team management", func() {
 
 			Steps: []resource.TestStep{
 				resource.TestStep{
-					// Add a team without any users
-
-					Config: `resource "concourse_team" "a_team" {
-									   team_name = "team-a"
-									}`,
-
-					Check: resource.ComposeTestCheckFunc(
-						func(s *terraform.State) error {
-							By("Creating an empty team")
-
-							fmt.Printf("%+v\n", s)
-							return nil
-						},
-
-						resource.TestCheckResourceAttr("concourse_team.a_team", "team_name", "team-a"),
-
-						resource.TestCheckResourceAttr("concourse_team.a_team", "owners.#", "0"),
-						resource.TestCheckResourceAttr("concourse_team.a_team", "members.#", "0"),
-						resource.TestCheckResourceAttr("concourse_team.a_team", "pipeline_operators.#", "0"),
-						resource.TestCheckResourceAttr("concourse_team.a_team", "viewers.#", "0"),
-
-						func(s *terraform.State) error {
-							teams, err := client.ListTeams()
-
-							if err != nil {
-								return nil
-							}
-
-							Expect(teams).To(HaveLen(2))
-
-							Expect(teams[0].Name).To(Equal("main"))
-							Expect(teams[1].Name).To(Equal("team-a"))
-
-							Expect(teams[1].Auth).To(BeNil())
-
-							return nil
-						},
-					),
-				},
-
-				resource.TestStep{
 					// Add a user as an owner
 
 					Config: `resource "concourse_team" "a_team" {
 									   team_name = "team-a"
-
-										 owners = ["user:github:tlwr"]
+									   owners = ["user:github:tlwr"]
 									}`,
 
 					Check: resource.ComposeTestCheckFunc(

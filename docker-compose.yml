@@ -11,10 +11,11 @@ services:
 
   concourse:
     image: concourse/concourse
-    command: quickstart
+    command: web
     privileged: true
     depends_on: [concourse-db]
     ports: ["8080:8080"]
+    volumes: ["./keys/web:/concourse-keys"]
     environment:
       CONCOURSE_POSTGRES_HOST: concourse-db
       CONCOURSE_POSTGRES_USER: concourse_user
