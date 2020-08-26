@@ -6,3 +6,4 @@ examples/terraform-provider-concourse
 terraform-provider-concourse
 keys/web/
 keys/worker/
+.idea/

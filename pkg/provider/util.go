@@ -2,7 +2,9 @@ package provider
 
 import (
 	"fmt"
+	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/ghodss/yaml"
+	"strings"
 )
 
 // JSONToJSON ensures that keys are ordered, etc, by double converting
@@ -72,4 +74,16 @@ func ParsePipelineConfig(
 	}
 
 	return outputJSON, nil
+}
+
+func SerializeWarnings(warnings []concourse.ConfigWarning) string {
+	var warningsMsg strings.Builder
+	if len(warnings) > 0 {
+		warningsMsg.WriteString(fmt.Sprintln())
+		for _, warning := range warnings {
+			warningsMsg.WriteString(fmt.Sprintf("  - %v\n", warning.Message))
+		}
+	}
+
+	return warningsMsg.String()
 }

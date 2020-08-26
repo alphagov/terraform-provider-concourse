@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 set -eu
 
+uid=$(id -u)
+gid=$(id -g)
+
 cd $(dirname $0)
 
 if [[ ! -d "web" ]] && [[ ! -d "worker" ]]; then
-    docker run --rm -v $PWD/web:/keys concourse/concourse:6.2 \
+    docker run --rm -v $PWD/web:/keys concourse/concourse:6.5 \
       generate-key -t rsa -f /keys/session_signing_key
-    docker run --rm -v $PWD/web:/keys concourse/concourse:6.2 \
+    docker run --rm -v $PWD/web:/keys concourse/concourse:6.5 \
       generate-key -t ssh -f /keys/tsa_host_key
-    docker run --rm -v $PWD/worker:/keys concourse/concourse:6.2 \
+    docker run --rm -v $PWD/worker:/keys concourse/concourse:6.5 \
       generate-key -t ssh -f /keys/worker_key
+
+    sudo chown -R ${uid}:${gid} .
 
     cp ./worker/worker_key.pub ./web/authorized_worker_keys
     cp ./web/tsa_host_key.pub ./worker
