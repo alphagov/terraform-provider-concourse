@@ -272,12 +272,12 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 		team := client.Team(teamName)
 
-		_, err := team.RenamePipeline(oldPipelineName, newPipelineName)
+		_, warnings, err := team.RenamePipeline(oldPipelineName, newPipelineName)
 
 		if err != nil {
 			return fmt.Errorf(
-				"Error renaming pipeline %s to %s in team %s: %s",
-				oldPipelineName, newPipelineName, teamName, err,
+				"Error renaming pipeline %s to %s in team %s: %s %s",
+				oldPipelineName, newPipelineName, teamName, err, SerializeWarnings(warnings),
 			)
 		}
 	}

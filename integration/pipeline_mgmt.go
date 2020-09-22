@@ -113,7 +113,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -178,7 +178,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -243,7 +243,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -308,7 +308,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -373,7 +373,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -438,7 +438,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -498,7 +498,7 @@ jobs:
 							teams, err := client.ListTeams()
 
 							if err != nil {
-								return nil
+								return err
 							}
 
 							Expect(teams).To(HaveLen(2))
@@ -521,7 +521,7 @@ jobs:
 					teams, err := client.ListTeams()
 
 					if err != nil {
-						return nil
+						return err
 					}
 
 					Expect(teams).To(HaveLen(1))

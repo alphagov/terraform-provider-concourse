@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
-	"github.com/concourse/concourse/skymarshal/token"
 	"golang.org/x/oauth2"
 )
 
@@ -31,8 +30,7 @@ func NewConcourseClient(
 		return nil, err
 	}
 	tokenSource := oauth2.StaticTokenSource(tok)
-	idTokenSource := token.NewTokenSource(tokenSource)
-	httpClient := oauth2.NewClient(ctx, idTokenSource)
+	httpClient := oauth2.NewClient(ctx, tokenSource)
 
 	return concourse.NewClient(url, httpClient, false), nil
 }
