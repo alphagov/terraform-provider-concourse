@@ -4,6 +4,9 @@ GENERATE_KEY := \
 		concourse/concourse:6.5 \
 		generate-key
 
+# shouldn't use CGO on binaries produced for the terraform registry
+export CGO_ENABLED=0
+
 .PHONY: build
 build: clean terraform-provider-concourse
 
