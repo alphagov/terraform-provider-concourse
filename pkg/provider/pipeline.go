@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataPipeline() *schema.Resource {

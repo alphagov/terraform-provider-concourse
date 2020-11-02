@@ -8,10 +8,10 @@ import (
 
 	"github.com/alphagov/terraform-provider-concourse/pkg/provider"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	// "github.com/hashicorp/terraform/helper/schema"
 	"github.com/concourse/concourse/atc"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 var _ = Describe("Team management", func() {
