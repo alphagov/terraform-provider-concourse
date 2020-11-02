@@ -8,10 +8,10 @@ import (
 
 	"github.com/alphagov/terraform-provider-concourse/pkg/provider"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	// "github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/concourse/concourse/atc"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var _ = Describe("Team management", func() {
@@ -19,7 +19,7 @@ var _ = Describe("Team management", func() {
 	AfterEach(TeardownTest)
 
 	It("should manage the lifecycle of a team", func() {
-		providers := map[string]terraform.ResourceProvider{
+		providers := map[string]*schema.Provider{
 			"concourse": provider.Provider(),
 		}
 

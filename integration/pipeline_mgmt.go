@@ -8,9 +8,9 @@ import (
 
 	"github.com/alphagov/terraform-provider-concourse/pkg/provider"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	// "github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var _ = Describe("Pipeline management", func() {
@@ -56,7 +56,7 @@ jobs:
 	)
 
 	It("should manage the lifecycle of a pipeline", func() {
-		providers := map[string]terraform.ResourceProvider{
+		providers := map[string]*schema.Provider{
 			"concourse": provider.Provider(),
 		}
 

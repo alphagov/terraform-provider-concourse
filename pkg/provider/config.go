@@ -5,7 +5,7 @@ import (
 
 	"github.com/concourse/concourse/fly/rc"
 	"github.com/concourse/concourse/go-concourse/concourse"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/alphagov/terraform-provider-concourse/pkg/client"
 )
