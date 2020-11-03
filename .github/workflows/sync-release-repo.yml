@@ -1,0 +1,20 @@
+name: sync-release-repo
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - master
+jobs:
+  repo-sync:
+    if: ${{ github.repository_owner == 'alphagov' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: repo-sync
+      uses: wei/git-sync@v2
+      with:
+        source_repo: "https://github.com/${{ github.repository }}.git"
+        source_branch: ${{ github.ref }}
+        destination_repo: "git@github.com:terraform-provider-concourse/terraform-provider-concourse.git"
+        destination_branch: ${{ github.ref }}
+        ssh_private_key: ${{ secrets.RELEASE_REPO_SSH_PRIVATE_KEY }}
