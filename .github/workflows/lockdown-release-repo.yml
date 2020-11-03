@@ -1,0 +1,23 @@
+name: lockdown-release-repo
+on:
+  issues:
+    types: opened
+  pull_request:
+    types: opened
+
+jobs:
+  lockdown:
+    if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@v2
+        with:
+          github-token: ${{ github.token }}
+          issue-comment: >
+            Please submit issues at https://github.com/alphagov/terraform-provider-concourse,
+            where development takes place. This repository is solely for the purpose of
+            releases.
+          pr-comment: >
+            Please submit pull requests at https://github.com/alphagov/terraform-provider-concourse,
+            where development takes place. This repository is solely for the purpose of
+            releases.

@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'release-repo-test-*'
     branches:
       - master
 jobs:
