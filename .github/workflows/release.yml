@@ -36,9 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: get-tag-name-step
-        run: echo "::set-output name=tag_name::${GITHUB_REF/refs\/tags\//}"
+        run: |
+          export TAG_NAME="${GITHUB_REF/refs\/tags\//}"
+          export RAW_VERSION="${TAG_NAME##v}"
+          echo "::set-output name=tag_name::${TAG_NAME}"
+          echo "::set-output name=raw_version::${RAW_VERSION}"
     outputs:
       tag_name: ${{ steps.get-tag-name-step.outputs.tag_name }}
+      raw_version: ${{ steps.get-tag-name-step.outputs.raw_version }}
 
   build:
     runs-on: ubuntu-latest
@@ -58,8 +63,8 @@ jobs:
       - name: compile
         id: compile
         env:
-          BINARY_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.tag_name }}
-          ZIP_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.tag_name }}_${{ matrix.goos }}_amd64.zip
+          BINARY_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}
+          ZIP_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}_${{ matrix.goos }}_amd64.zip
         run: |
           GOOS="${{ matrix.goos }}" make
           mv terraform-provider-concourse $BINARY_NAME
@@ -90,7 +95,7 @@ jobs:
       - name: gather-hash-sign
         id: gather-hash-sign
         env:
-          HASH_FILE_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.tag_name }}_SHA256SUMS
+          HASH_FILE_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}_SHA256SUMS
         run: |
           mkdir gathered
           cp artifacts/*.zip/*.zip gathered/
