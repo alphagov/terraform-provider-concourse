@@ -2,7 +2,7 @@ name: release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*'
 
 jobs:
 
@@ -134,7 +134,6 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          draft: true
     outputs:
       release_upload_url: ${{ steps.create-release.outputs.upload_url }}
 
