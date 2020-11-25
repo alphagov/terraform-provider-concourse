@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"golang.org/x/oauth2"
+	"google.golang.org/protobuf/internal/errors"
 )
 
 // NewConcourseClient gives you an authenticated Concourse client using
@@ -32,7 +34,7 @@ func NewConcourseClient(
 	cacerts, err := getCaCert(caFile)
 
 	if err != nil {
-		panic("Cannot load cacerts from file " + caFile)
+		return nil, fmt.Errorf("Cannot load cacerts from file %s", caFile)
 	}
 
 	tr := &http.Transport{
@@ -62,7 +64,7 @@ func getCaCert(caFileName string) (*x509.CertPool, error) {
 	roots := x509.NewCertPool()
 	ok := roots.AppendCertsFromPEM(cacerts)
 	if !ok {
-		panic("failed to parse root certificate")
+		return nil, errors.New("failed to parse root certificate")
 	}
 	return roots, nil
 }
