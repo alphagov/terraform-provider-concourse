@@ -10,7 +10,6 @@ import (
 
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"golang.org/x/oauth2"
-	"google.golang.org/protobuf/internal/errors"
 )
 
 // NewConcourseClient gives you an authenticated Concourse client using
@@ -64,7 +63,7 @@ func getCaCert(caFileName string) (*x509.CertPool, error) {
 	roots := x509.NewCertPool()
 	ok := roots.AppendCertsFromPEM(cacerts)
 	if !ok {
-		return nil, errors.New("failed to parse root certificate")
+		return nil, fmt.Errorf("failed to parse root certificate")
 	}
 	return roots, nil
 }
