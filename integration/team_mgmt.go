@@ -177,6 +177,53 @@ var _ = Describe("Team management", func() {
 				},
 
 				resource.TestStep{
+					// New team
+
+					Config: `resource "concourse_team" "new_team" {
+									   team_name = "team-new"
+
+										 pipeline_operators = ["user:github:tlwr"]
+									}`,
+
+					Check: resource.ComposeTestCheckFunc(
+						func(s *terraform.State) error {
+							By("New team")
+
+							fmt.Printf("%+v\n", s)
+							return nil
+						},
+
+						resource.TestCheckResourceAttr("concourse_team.new_team", "team_name", "team-new"),
+
+						resource.TestCheckResourceAttr("concourse_team.new_team", "owners.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.new_team", "members.#", "0"),
+						resource.TestCheckResourceAttr("concourse_team.new_team", "pipeline_operators.#", "1"),
+						resource.TestCheckResourceAttr("concourse_team.new_team", "pipeline_operators.0", "user:github:tlwr"),
+						resource.TestCheckResourceAttr("concourse_team.new_team", "viewers.#", "0"),
+
+						func(s *terraform.State) error {
+							teams, err := client.ListTeams()
+
+							if err != nil {
+								return nil
+							}
+
+							Expect(teams).To(HaveLen(2))
+
+							Expect(teams[0].Name).To(Equal("main"))
+							Expect(teams[1].Name).To(Equal("team-new"))
+
+							expectedTeamAuth := atc.TeamAuth{
+								"pipeline-operator": {"users": {"github:tlwr"}},
+							}
+
+							Expect(teams[1].Auth).To(Equal(expectedTeamAuth))
+
+							return nil
+						},
+					),
+				},
+				resource.TestStep{
 					// Rename the team
 
 					Config: `resource "concourse_team" "a_team" {

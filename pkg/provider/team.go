@@ -233,7 +233,11 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
-	return resourceTeamUpdate(d, m)
+	return resourceTeamCreateUpdate(d, m, true)
+}
+
+func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
+	return resourceTeamCreateUpdate(d, m, false)
 }
 
 func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
@@ -254,7 +258,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool) error {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
 	auths := make(map[string][]string)
@@ -301,7 +305,7 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 
 	team := client.Team(teamName)
 
-	if d.HasChange("team_name") {
+	if d.HasChange("team_name") && !create {
 		_, warnings, err := team.RenameTeam(d.Id(), d.Get("team_name").(string))
 
 		if err != nil {
