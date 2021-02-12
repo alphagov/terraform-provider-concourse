@@ -21,6 +21,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v1
 
+      - name: unit-tests
+        run: make unit-tests
+
       - name: ensure-containers-exist
         env:
           CONCOURSE_VERSION: ${{ matrix.concourse-version }}

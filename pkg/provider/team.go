@@ -2,7 +2,6 @@ package provider
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/concourse/concourse/atc"
@@ -33,32 +32,36 @@ func dataTeam() *schema.Resource {
 			},
 
 			"owners": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
+				Set:      schema.HashString,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 
 			"members": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
+				Set:      schema.HashString,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 
 			"pipeline_operators": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
+				Set:      schema.HashString,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 
 			"viewers": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
+				Set:      schema.HashString,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -82,8 +85,9 @@ func resourceTeam() *schema.Resource {
 			},
 
 			"owners": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
+				Set:      schema.HashString,
 				DefaultFunc: func() (interface{}, error) {
 					return make([]string, 0), nil
 				},
@@ -93,8 +97,9 @@ func resourceTeam() *schema.Resource {
 			},
 
 			"members": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      schema.HashString,
 				DefaultFunc: func() (interface{}, error) {
 					return make([]string, 0), nil
 				},
@@ -104,8 +109,9 @@ func resourceTeam() *schema.Resource {
 			},
 
 			"pipeline_operators": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      schema.HashString,
 				DefaultFunc: func() (interface{}, error) {
 					return make([]string, 0), nil
 				},
@@ -115,8 +121,9 @@ func resourceTeam() *schema.Resource {
 			},
 
 			"viewers": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      schema.HashString,
 				DefaultFunc: func() (interface{}, error) {
 					return make([]string, 0), nil
 				},
@@ -125,22 +132,24 @@ func resourceTeam() *schema.Resource {
 				},
 			},
 		},
+
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type: resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceTeamStateUpgradeV0,
+				Version: 0,
+			},
+		},
 	}
 }
 
 type teamHelper struct {
 	TeamName          string
-	Owners            []string
-	Members           []string
-	PipelineOperators []string
-	Viewers           []string
-}
-
-func (t *teamHelper) sort() {
-	sort.Strings(t.Owners)
-	sort.Strings(t.Members)
-	sort.Strings(t.PipelineOperators)
-	sort.Strings(t.Viewers)
+	Owners            []interface{}
+	Members           []interface{}
+	PipelineOperators []interface{}
+	Viewers           []interface{}
 }
 
 func (t *teamHelper) appendElem(field string, elem string) {
@@ -210,7 +219,6 @@ func readTeam(
 		}
 	}
 
-	retVal.sort()
 	return retVal, nil
 }
 
@@ -225,10 +233,10 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(teamName)
-	d.Set("owners", team.Owners)
-	d.Set("members", team.Members)
-	d.Set("pipeline_operators", team.PipelineOperators)
-	d.Set("viewers", team.Viewers)
+	d.Set("owners", schema.NewSet(schema.HashString, team.Owners))
+	d.Set("members", schema.NewSet(schema.HashString, team.Members))
+	d.Set("pipeline_operators", schema.NewSet(schema.HashString, team.PipelineOperators))
+	d.Set("viewers", schema.NewSet(schema.HashString, team.Viewers))
 	return nil
 }
 
@@ -251,10 +259,10 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(teamName)
-	d.Set("owners", team.Owners)
-	d.Set("members", team.Members)
-	d.Set("pipeline_operators", team.PipelineOperators)
-	d.Set("viewers", team.Viewers)
+	d.Set("owners", schema.NewSet(schema.HashString, team.Owners))
+	d.Set("members", schema.NewSet(schema.HashString, team.Members))
+	d.Set("pipeline_operators", schema.NewSet(schema.HashString, team.PipelineOperators))
+	d.Set("viewers", schema.NewSet(schema.HashString, team.Viewers))
 	return nil
 }
 
@@ -272,7 +280,7 @@ func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool
 		// concourse calls things: "pipeline-operator", terraform calls them: "pipeline_operators"
 		terraformRoleName := strings.ReplaceAll(role, "-", "_") + "s"
 
-		for _, terraformInput := range d.Get(terraformRoleName).([]interface{}) {
+		for _, terraformInput := range d.Get(terraformRoleName).(*schema.Set).List() {
 			roleEnabled[role] = true
 			authline = strings.Split(terraformInput.(string), ":")
 			switch authline[0] {
