@@ -46,3 +46,7 @@ keys/web/authorized_worker_keys: keys/worker/worker_key
 .PHONY: integration-tests
 integration-tests: keys/web/session_signing_key keys/web/tsa_host_key keys/worker/worker_key keys/worker/tsa_host_key.pub keys/web/authorized_worker_keys
 	go test -count 1 -v ./integration
+
+.PHONY: unit-tests
+unit-tests:
+	go test -count 1 -v ./pkg/provider
