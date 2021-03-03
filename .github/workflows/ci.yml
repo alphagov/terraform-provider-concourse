@@ -12,6 +12,7 @@ jobs:
         concourse-version:
           - "6.5.1"
           - "6.7.0"
+          - "7.0.0"
     steps:
       - name: setup
         uses: actions/setup-go@v2
