@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -8,6 +10,8 @@ import (
 )
 
 func main() {
+	log.SetPrefix("[DEBUG] ")
+
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() *schema.Provider {
 			return provider.Provider()

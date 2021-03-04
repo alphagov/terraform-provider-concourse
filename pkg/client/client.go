@@ -32,5 +32,5 @@ func NewConcourseClient(
 	tokenSource := oauth2.StaticTokenSource(tok)
 	httpClient := oauth2.NewClient(ctx, tokenSource)
 
-	return concourse.NewClient(url, httpClient, false), nil
+	return concourse.NewClient(url, httpClient, true), nil
 }
