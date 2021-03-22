@@ -19,6 +19,28 @@ var _ = Describe("Team management", func() {
 	BeforeEach(SetupTest)
 	AfterEach(TeardownTest)
 
+	It("should read all teams", func() {
+		providers := map[string]*schema.Provider{
+			"concourse": provider.Provider(),
+		}
+
+		resource.Test(NewGinkoTerraformTestingT(), resource.TestCase{
+			IsUnitTest: false,
+
+			Providers: providers,
+
+			Steps: []resource.TestStep{
+				resource.TestStep{
+					Config: `data "concourse_teams" "teams" {}`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("data.concourse_teams.teams", "names.#", "1"),
+						resource.TestCheckResourceAttr("data.concourse_teams.teams", "names.0", "main"),
+					),
+				},
+			},
+		})
+	})
+
 	It("should manage the lifecycle of a team", func() {
 		providers := map[string]*schema.Provider{
 			"concourse": provider.Provider(),
