@@ -19,6 +19,17 @@ func Provider() *schema.Provider {
 				Description: "URL, do not use if using target ",
 				Optional:    true,
 			},
+			"ca_cert_file": {
+				Type:        schema.TypeString,
+				DefaultFunc: schema.EnvDefaultFunc("REQUESTS_CA_BUNDLE", nil),
+				Description: "Client CA certificates that are used while connecting to concourse",
+				Optional:    true,
+			},
+			"insecure_skip_verify": {
+				Type:        schema.TypeBool,
+				Description: "Set this to true if concourse uses a custom certificate",
+				Optional:    true,
+			},
 			"team": {
 				Type:        schema.TypeString,
 				DefaultFunc: schema.EnvDefaultFunc("FLY_TEAM", nil),

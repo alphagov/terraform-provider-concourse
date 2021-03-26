@@ -47,6 +47,8 @@ provider "concourse" {
 
   username = "localuser"
   password = "very-secure-password"
+  ca_cert_file = "path-to-ca-file"
+  insecure_skip_verify = false
 }
 ```
 
