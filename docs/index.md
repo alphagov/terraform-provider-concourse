@@ -31,7 +31,7 @@ provider "concourse" {
 }
 ```
 
-## Look up all teams
+### Look up all teams
 
 ```hcl
 data "concourse_teams" "teams" {
