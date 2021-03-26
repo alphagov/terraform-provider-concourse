@@ -50,6 +50,17 @@ provider "concourse" {
 }
 ```
 
+## Look up all teams
+
+```hcl
+data "concourse_teams" "teams" {
+}
+
+output "team_names" {
+  value = concourse_teams.teams.names
+}
+```
+
 ## Look up a team
 
 ```hcl
