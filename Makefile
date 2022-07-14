@@ -1,3 +1,9 @@
+OS = $$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')
+ARCH = amd64
+
+ifneq ($$(uname -m),x86_64)
+	ARCH = arm64
+endif
 
 GENERATE_KEY := \
 		docker run --rm -v $$PWD/keys:/keys --user $$(id -u):$$(id -g) \
@@ -19,9 +25,9 @@ terraform-provider-concourse:
 
 .PHONY: install
 install: terraform-provider-concourse
-	@mkdir -p ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_$$(uname -m)
-	@cp terraform-provider-concourse ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_$$(uname -m)
-	@echo Installed terraform provider into ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_$$(uname -m)
+	@mkdir -p ~/.terraform.d/plugins/$(OS)_$(ARCH)
+	@cp terraform-provider-concourse ~/.terraform.d/plugins/$(OS)_$(ARCH)
+	@echo Installed terraform provider into ~/.terraform.d/plugins/$(OS)_$(ARCH)
 
 keys/web/session_signing_key:
 	mkdir -p keys/web
