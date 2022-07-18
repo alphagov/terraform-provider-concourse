@@ -1,9 +1,5 @@
-OS = $$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')
-ARCH = amd64
-
-ifneq ($$(uname -m),x86_64)
-	ARCH = arm64
-endif
+OS = $$(go env GOOS)
+ARCH = $$(go env GOARCH)
 
 GENERATE_KEY := \
 		docker run --rm -v $$PWD/keys:/keys --user $$(id -u):$$(id -g) \
