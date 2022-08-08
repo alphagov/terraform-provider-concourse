@@ -1,17 +1,19 @@
 package provider
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataPipeline() *schema.Resource {
 	return &schema.Resource{
-		Read: dataPipelineRead,
+		ReadContext: dataPipelineRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_name": &schema.Schema{
@@ -53,10 +55,10 @@ func dataPipeline() *schema.Resource {
 
 func resourcePipeline() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePipelineCreate,
-		Read:   resourcePipelineRead,
-		Update: resourcePipelineUpdate,
-		Delete: resourcePipelineDelete,
+		CreateContext: resourcePipelineCreate,
+		ReadContext:   resourcePipelineRead,
+		UpdateContext: resourcePipelineUpdate,
+		DeleteContext: resourcePipelineDelete,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_name": &schema.Schema{
@@ -116,7 +118,9 @@ func pipelineID(teamName string, pipelineName string) string {
 	return fmt.Sprintf("%s:%s", teamName, pipelineName)
 }
 
+
 func readPipeline(
+	ctx context.Context,
 	client concourse.Client,
 	teamName string,
 	pipelineName string,
@@ -186,15 +190,15 @@ func readPipeline(
 	return retVal, true, nil
 }
 
-func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
+func dataPipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 
-	pipeline, wasFound, err := readPipeline(client, teamName, pipelineName)
+	pipeline, wasFound, err := readPipeline(ctx, client, teamName, pipelineName)
 
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Error reading pipeline %s from team '%s': %s",
 			pipelineName, teamName, err,
 		)
@@ -213,19 +217,19 @@ func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePipelineCreate(d *schema.ResourceData, m interface{}) error {
-	return resourcePipelineUpdate(d, m)
+func resourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return resourcePipelineUpdate(ctx, d, m)
 }
 
-func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
+func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 
-	pipeline, wasFound, err := readPipeline(client, teamName, pipelineName)
+	pipeline, wasFound, err := readPipeline(ctx, client, teamName, pipelineName)
 
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Error reading pipeline %s from team '%s': %s",
 			pipelineName, teamName, err,
 		)
@@ -244,7 +248,7 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
+func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 
 	if d.HasChange("team_name") && d.Id() != "" {
@@ -258,7 +262,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		_, err := team.DeletePipeline(oldPipelineName)
 
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error deleting old pipeline %s in team %s: %s",
 				oldPipelineName, oldTeamName, err,
 			)
@@ -275,7 +279,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		_, warnings, err := team.RenamePipeline(oldPipelineName, newPipelineName)
 
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error renaming pipeline %s to %s in team %s: %s %s",
 				oldPipelineName, newPipelineName, teamName, err, SerializeWarnings(warnings),
 			)
@@ -290,10 +294,10 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	pipelineConfig := d.Get("pipeline_config").(string)
 	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
 
-	pipeline, _, err := readPipeline(client, teamName, pipelineName)
+	pipeline, _, err := readPipeline(ctx, client, teamName, pipelineName)
 
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Error looking up pipeline %s in team %s: %s",
 			pipelineName, teamName, err,
 		)
@@ -302,7 +306,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
 
 	if err != nil {
-		return fmt.Errorf("Error parsing pipeline_config: %s", err)
+		return diag.Errorf("Error parsing pipeline_config: %s", err)
 	}
 
 	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
@@ -310,7 +314,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Encountered error setting config for pipeline %s in team '%s': %s",
 			pipelineName, teamName, err,
 		)
@@ -322,7 +326,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 			warnings += fmt.Sprintf("%s: %s\n", w.Type, w.Message)
 		}
 
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Encountered pipeline warnings (%s/%s):\n %s",
 			pipelineName, teamName, warnings,
 		)
@@ -331,13 +335,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.Get("is_exposed").(bool) {
 		found, err := team.ExposePipeline(pipelineName)
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error exposing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
@@ -345,13 +349,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	} else {
 		found, err := team.HidePipeline(pipelineName)
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error hiding pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
@@ -361,13 +365,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.Get("is_paused").(bool) {
 		found, err := team.PausePipeline(pipelineName)
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error pausing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
@@ -375,23 +379,23 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	} else {
 		found, err := team.UnpausePipeline(pipelineName)
 		if err != nil {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Error unpausing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
-			return fmt.Errorf(
+			return diag.Errorf(
 				"Could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 	}
 
-	return resourcePipelineRead(d, m)
+	return resourcePipelineRead(ctx, d, m)
 }
 
-func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
+func resourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
@@ -400,14 +404,14 @@ func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
 	deleted, err := team.DeletePipeline(pipelineName)
 
 	if err != nil {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Could not delete pipeline %s from team %s: %s",
 			pipelineName, teamName, err,
 		)
 	}
 
 	if !deleted {
-		return fmt.Errorf(
+		return diag.Errorf(
 			"Could not delete pipeline %s from team %s", pipelineName, teamName,
 		)
 	}
