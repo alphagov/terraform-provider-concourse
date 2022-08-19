@@ -1,6 +1,6 @@
 module github.com/alphagov/terraform-provider-concourse
 
-go 1.14
+go 1.18
 
 require (
 	cloud.google.com/go v0.61.0 // indirect
