@@ -1,4 +1,7 @@
 
+OS = $$(go env GOOS)
+ARCH = $$(go env GOARCH)
+
 GENERATE_KEY := \
 		docker run --rm -v $$PWD/keys:/keys --user $$(id -u):$$(id -g) \
 		concourse/concourse:6.5 \
@@ -19,9 +22,9 @@ terraform-provider-concourse:
 
 .PHONY: install
 install: terraform-provider-concourse
-	@mkdir -p ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_amd64
-	@cp terraform-provider-concourse ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_amd64
-	@echo Installed terraform provider into ~/.terraform.d/plugins/$$(uname | tr '[:upper:]' '[:lower:]' | tr -d '[:digit:]')_amd64
+	@mkdir -p ~/.terraform.d/plugins/$(OS)_$(ARCH)
+	@cp terraform-provider-concourse ~/.terraform.d/plugins/$(OS)_$(ARCH)
+	@echo Installed terraform provider into ~/.terraform.d/plugins/$(OS)_$(ARCH)
 
 keys/web/session_signing_key:
 	mkdir -p keys/web

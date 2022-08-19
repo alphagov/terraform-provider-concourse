@@ -15,6 +15,7 @@ jobs:
           - "6.5.1"
           - "6.7.0"
           - "7.0.0"
+          - "7.8.2"
     steps:
       - name: setup
         uses: actions/setup-go@v2
@@ -34,7 +35,9 @@ jobs:
           docker-compose up -d && docker-compose down
 
       - name: integration-tests
-        run: sudo make integration-tests
+        run: |
+          sudo make integration-tests-prep-keys
+          make integration-tests
 
   get-tag-name:
     runs-on: ubuntu-latest
@@ -55,6 +58,7 @@ jobs:
     strategy:
       matrix:
         goos: [ "linux", "darwin" ]
+        goarch: [ "amd64", "arm64" ]
     steps:
       - name: setup
         uses: actions/setup-go@v2
@@ -68,9 +72,9 @@ jobs:
         id: compile
         env:
           BINARY_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}
-          ZIP_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}_${{ matrix.goos }}_amd64.zip
+          ZIP_NAME: terraform-provider-concourse_${{ needs.get-tag-name.outputs.raw_version }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
         run: |
-          GOOS="${{ matrix.goos }}" make
+          GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" make
           mv terraform-provider-concourse $BINARY_NAME
           zip $ZIP_NAME $BINARY_NAME
           echo "::set-output name=zip_name::$ZIP_NAME"
