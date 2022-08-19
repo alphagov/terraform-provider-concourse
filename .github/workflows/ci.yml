@@ -33,5 +33,5 @@ jobs:
 
       - name: integration-tests
         run: |
-          sudo integration-tests-prep-keys
+          sudo make integration-tests-prep-keys
           make integration-tests
