@@ -32,4 +32,6 @@ jobs:
           docker-compose up -d && docker-compose down
 
       - name: integration-tests
-        run: sudo make integration-tests
+        run: |
+          sudo make integration-tests-prep-keys
+          make integration-tests

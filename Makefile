@@ -43,8 +43,13 @@ keys/web/authorized_worker_keys: keys/worker/worker_key
 	mkdir -p keys/web
 	cp keys/worker/worker_key.pub $@
 
+# separate from `integration-tests` so it can be run as root without
+# running the whole integration tests as root
+.PHONY: integration-tests-prep-keys
+integration-tests-prep-keys: keys/web/session_signing_key keys/web/tsa_host_key keys/worker/worker_key keys/worker/tsa_host_key.pub keys/web/authorized_worker_keys
+
 .PHONY: integration-tests
-integration-tests: keys/web/session_signing_key keys/web/tsa_host_key keys/worker/worker_key keys/worker/tsa_host_key.pub keys/web/authorized_worker_keys
+integration-tests: integration-tests-prep-keys
 	go test -count 1 -v ./integration
 
 .PHONY: unit-tests
