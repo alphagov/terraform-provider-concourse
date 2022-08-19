@@ -10,7 +10,7 @@ jobs:
     if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/repo-lockdown@v2
+      - uses: dessant/repo-lockdown@0b093279a77b44bbc38e85089b5463dd06b4aea4  # v2.2.0
         with:
           github-token: ${{ github.token }}
           issue-comment: >

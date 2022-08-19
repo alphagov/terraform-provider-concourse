@@ -7,7 +7,7 @@ on:
 jobs:
 
   test:  # this is cloned from ci.yml until github actions support job reuse
-    if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
+    #if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -91,7 +91,7 @@ jobs:
     steps:
       - name: import-gpg-key
         id: import-gpg-key
-        uses: paultyng/ghaction-import-gpg@v2.1.0
+        uses: paultyng/ghaction-import-gpg@53deb67fe3b05af114ad9488a4da7b782455d588  # v2.1.0
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_SECRET_KEY }}
           PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
