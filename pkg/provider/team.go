@@ -77,6 +77,12 @@ func resourceTeam() *schema.Resource {
 		ReadContext:   resourceTeamRead,
 		UpdateContext: resourceTeamUpdate,
 		DeleteContext: resourceTeamDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				d.Set("team_name", d.Id())
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 

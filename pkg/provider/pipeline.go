@@ -60,6 +60,18 @@ func resourcePipeline() *schema.Resource {
 		UpdateContext: resourcePipelineUpdate,
 		DeleteContext: resourcePipelineDelete,
 
+		Importer: &schema.ResourceImporter{
+			StateContext: func(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				teamName, pipelineName, err := parsePipelineID(d.Id())
+				if err != nil {
+					return []*schema.ResourceData{d}, err
+				}
+				d.Set("team_name", teamName)
+				d.Set("pipeline_name", pipelineName)
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Schema: map[string]*schema.Schema{
 			"pipeline_name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -118,6 +130,13 @@ func pipelineID(teamName string, pipelineName string) string {
 	return fmt.Sprintf("%s:%s", teamName, pipelineName)
 }
 
+func parsePipelineID(id string) (string, string, error) {
+	parts := strings.SplitN(id, ":", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("Unexpected ID format (%q). Expected team_name:pipeline_name", id)
+	}
+	return parts[0], parts[1], nil
+}
 
 func readPipeline(
 	ctx context.Context,
