@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/concourse/concourse/atc"
+	"github.com/concourse/concourse/atc/configvalidate"
 	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"sigs.k8s.io/yaml"
 )
 
 func dataPipeline() *schema.Resource {
@@ -87,6 +92,28 @@ func resourcePipeline() *schema.Resource {
 			"pipeline_config": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ValidateDiagFunc: func(v interface{}, p cty.Path) diag.Diagnostics {
+					value := v.(string)
+					var diags diag.Diagnostics
+					_, errors, err := validatePipelineConfig([]byte(value))
+					if err != nil {
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "error validating pipeline configuration",
+							Detail:   fmt.Sprintf("%s", err),
+						}
+						diags = append(diags, diag)
+					}
+					if errors != nil {
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "invalid pipeline configuration",
+							Detail:   fmt.Sprint(strings.Join(errors, "\n")),
+						}
+						diags = append(diags, diag)
+					}
+					return diags
+				},
 			},
 
 			"json": &schema.Schema{
@@ -130,7 +157,7 @@ func readPipeline(
 
 	team := client.Team(teamName)
 
-	pipeline, pipelineFound, err := team.Pipeline(pipelineName)
+	pipeline, pipelineFound, err := team.Pipeline(atc.PipelineRef{Name: pipelineName})
 
 	if err != nil {
 		return retVal, false, err
@@ -141,7 +168,7 @@ func readPipeline(
 	}
 
 	atcConfig, version, pipelineCfgFound, err := team.PipelineConfig(
-		pipelineName,
+		atc.PipelineRef{Name: pipelineName},
 	)
 
 	if err != nil {
@@ -255,7 +282,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
 
 		team := client.Team(oldTeamName)
-		_, err := team.DeletePipeline(oldPipelineName)
+		_, err := team.DeletePipeline(atc.PipelineRef{Name: oldPipelineName})
 
 		if err != nil {
 			return fmt.Errorf(
@@ -306,7 +333,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
-		pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
+		atc.PipelineRef{Name: pipelineName}, pipeline.ConfigVersion, []byte(parsedJSON), false,
 	)
 
 	if err != nil {
@@ -329,7 +356,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if d.Get("is_exposed").(bool) {
-		found, err := team.ExposePipeline(pipelineName)
+		found, err := team.ExposePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return fmt.Errorf(
 				"Error exposing pipeline %s in team '%s': %s",
@@ -343,7 +370,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 			)
 		}
 	} else {
-		found, err := team.HidePipeline(pipelineName)
+		found, err := team.HidePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return fmt.Errorf(
 				"Error hiding pipeline %s in team '%s': %s",
@@ -359,7 +386,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if d.Get("is_paused").(bool) {
-		found, err := team.PausePipeline(pipelineName)
+		found, err := team.PausePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return fmt.Errorf(
 				"Error pausing pipeline %s in team '%s': %s",
@@ -373,7 +400,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 			)
 		}
 	} else {
-		found, err := team.UnpausePipeline(pipelineName)
+		found, err := team.UnpausePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return fmt.Errorf(
 				"Error unpausing pipeline %s in team '%s': %s",
@@ -397,7 +424,7 @@ func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
 	teamName := d.Get("team_name").(string)
 	team := client.Team(teamName)
 
-	deleted, err := team.DeletePipeline(pipelineName)
+	deleted, err := team.DeletePipeline(atc.PipelineRef{Name: pipelineName})
 
 	if err != nil {
 		return fmt.Errorf(
@@ -414,4 +441,23 @@ func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId("")
 	return nil
+}
+
+// This function uses the same underlying validation function
+// as`fly validate-pipeline`
+func validatePipelineConfig(config []byte) ([]string, []string, error) {
+	var atcConfig atc.Config
+	if err := yaml.Unmarshal(config, &atcConfig); err != nil {
+		return nil, nil, fmt.Errorf("error unmarshalling pipeline yaml: %s", err)
+	}
+
+	warnings, errors := configvalidate.Validate(atcConfig)
+
+	// convert from []atc.ConfigWarning to []string
+	warningStrings := make([]string, len(warnings))
+	for i, warning := range warnings {
+		warningStrings[i] = fmt.Sprintf("%s: %s", warning.Type, warning.Message)
+	}
+
+	return warningStrings, errors, nil
 }
