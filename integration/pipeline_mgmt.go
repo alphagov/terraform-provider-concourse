@@ -18,7 +18,7 @@ var _ = Describe("Pipeline management", func() {
 	AfterEach(TeardownTest)
 
 	const (
-		pipelineConfig = `
+		pipelineConfig = `#
 resources:
   - name: every-midnight
     type: time
