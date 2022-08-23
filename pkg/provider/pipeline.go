@@ -104,7 +104,7 @@ func resourcePipeline() *schema.Resource {
 						}
 						diags = append(diags, diag)
 					}
-					if errors != nil {
+					if len(errors) > 0 {
 						diag := diag.Diagnostic{
 							Severity: diag.Error,
 							Summary:  "invalid pipeline configuration",

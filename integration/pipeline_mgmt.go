@@ -18,7 +18,7 @@ var _ = Describe("Pipeline management", func() {
 	AfterEach(TeardownTest)
 
 	const (
-		pipelineConfig = `#
+		pipelineConfig = `
 resources:
   - name: every-midnight
     type: time
@@ -37,7 +37,7 @@ jobs:
 
 		pipelineConfigJSON = `{"jobs":[{"name":"check-the-time","plan":[{"get":"every-midnight","trigger":true}],"serial":true}],"resources":[{"name":"every-midnight","source":{"location":"Europe/London","start":"12:00AM","stop":"12:15AM"},"type":"time"}]}`
 
-		updatedPipelineConfig = `#
+		updatedPipelineConfig = `
 resources:
   - name: every-midnight
     type: time
