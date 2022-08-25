@@ -1,0 +1,14 @@
+name: keep-release-repo-deploy-key-active
+on:
+  schedule:
+    - cron: '10 4 10 * *'
+
+jobs:
+  clone-release-repo:
+    if: ${{ github.repository_owner != 'terraform-provider-concourse' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: terraform-provider-concourse/terraform-provider-concourse
+          ssh-key: ${{ secrets.RELEASE_REPO_SSH_PRIVATE_KEY }}
