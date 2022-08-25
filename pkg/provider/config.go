@@ -24,7 +24,7 @@ func ProviderConfigurationBuilder(
 		target, err := rc.LoadTarget(targetName, false)
 
 		if err != nil {
-			return nil, fmt.Errorf("Error loading target: %s", err)
+			return nil, fmt.Errorf("error loading target: %s", err)
 		}
 
 		return &ProviderConfig{
@@ -45,7 +45,7 @@ func ProviderConfigurationBuilder(
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("Error creating client: %s", err)
+			return nil, fmt.Errorf("error creating client: %s", err)
 		}
 
 		return &ProviderConfig{
@@ -54,6 +54,6 @@ func ProviderConfigurationBuilder(
 	}
 
 	return nil, fmt.Errorf(
-		`Please specify "target" or "username", "password", "team", and "url"`,
+		`please specify "target" or "username", "password", "team", and "url"`,
 	)
 }

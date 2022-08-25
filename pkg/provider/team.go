@@ -26,12 +26,11 @@ func dataTeam() *schema.Resource {
 		Read: dataTeamRead,
 
 		Schema: map[string]*schema.Schema{
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"owners": &schema.Schema{
+			"owners": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -39,8 +38,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"members": &schema.Schema{
+			"members": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -48,8 +46,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"pipeline_operators": &schema.Schema{
+			"pipeline_operators": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -57,8 +54,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"viewers": &schema.Schema{
+			"viewers": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -78,13 +74,11 @@ func resourceTeam() *schema.Resource {
 		Delete: resourceTeamDelete,
 
 		Schema: map[string]*schema.Schema{
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"owners": &schema.Schema{
+			"owners": {
 				Type:     schema.TypeSet,
 				Required: true,
 				Set:      schema.HashString,
@@ -95,8 +89,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"members": &schema.Schema{
+			"members": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -107,8 +100,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"pipeline_operators": &schema.Schema{
+			"pipeline_operators": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -119,8 +111,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"viewers": &schema.Schema{
+			"viewers": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -136,7 +127,7 @@ func resourceTeam() *schema.Resource {
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
-				Type: resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
+				Type:    resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: resourceTeamStateUpgradeV0,
 				Version: 0,
 			},
@@ -190,7 +181,7 @@ func readTeam(
 	}
 
 	if foundTeam == nil {
-		return retVal, fmt.Errorf("Could not find team %s", teamName)
+		return retVal, fmt.Errorf("could not find team %s", teamName)
 	}
 
 	var (
@@ -300,7 +291,7 @@ func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool
 	// we cant set a role into the TeamAuth struct if it doesnt exist
 	// otherwise sending the atc.Team to concourse creates "role": null entries
 	for _, role := range roleNames {
-		if roleEnabled[role] == true {
+		if roleEnabled[role] {
 			teamDetails.Auth[role] = map[string][]string{}
 			for _, roleType := range roleTypes {
 				roleValues := auths[role+"_"+roleType]
@@ -317,18 +308,18 @@ func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool
 		_, warnings, err := team.RenameTeam(d.Id(), d.Get("team_name").(string))
 
 		if err != nil {
-			return fmt.Errorf("Could not rename team %s %s", teamName, SerializeWarnings(warnings))
+			return fmt.Errorf("could not rename team %s %s", teamName, SerializeWarnings(warnings))
 		}
 	}
 
 	_, created, updated, warnings, err := team.CreateOrUpdate(teamDetails)
 
 	if err != nil {
-		return fmt.Errorf("Error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
+		return fmt.Errorf("error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
 	}
 
 	if !created && !updated {
-		return fmt.Errorf("Could not create or update team %s", teamName)
+		return fmt.Errorf("could not create or update team %s", teamName)
 	}
 
 	return resourceTeamRead(d, m)
@@ -339,7 +330,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	teamName := d.Get("team_name").(string)
 
 	if teamName == "main" {
-		return fmt.Errorf("Cannot delete main team")
+		return fmt.Errorf("cannot delete main team")
 	}
 
 	team := client.Team(teamName)
@@ -347,7 +338,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	err := team.DestroyTeam(teamName)
 
 	if err != nil {
-		return fmt.Errorf("Could not delete team %s: %s", teamName, err)
+		return fmt.Errorf("could not delete team %s: %s", teamName, err)
 	}
 
 	d.SetId("")

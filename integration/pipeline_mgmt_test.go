@@ -70,7 +70,7 @@ jobs:
 			Providers: providers,
 
 			Steps: []resource.TestStep{
-				resource.TestStep{
+				{
 					// Add a pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -134,8 +134,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Pause and expose the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -199,8 +198,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Unpause and hide the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -264,8 +262,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Update the pipeline configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -329,8 +326,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Move a pipeline from one team to another
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -394,8 +390,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Rename the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -459,8 +454,7 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// Delete the pipeline
 
 					Config: `data "concourse_team" "main_team" {

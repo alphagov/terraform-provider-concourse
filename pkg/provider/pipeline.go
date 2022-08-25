@@ -14,35 +14,30 @@ func dataPipeline() *schema.Resource {
 		Read: dataPipelineRead,
 
 		Schema: map[string]*schema.Schema{
-			"pipeline_name": &schema.Schema{
+			"pipeline_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"is_exposed": &schema.Schema{
+			"is_exposed": {
 				Type:     schema.TypeBool,
 				Required: false,
 				Computed: true,
 			},
-
-			"is_paused": &schema.Schema{
+			"is_paused": {
 				Type:     schema.TypeBool,
 				Required: false,
 				Computed: true,
 			},
-
-			"yaml": &schema.Schema{
+			"yaml": {
 				Type:     schema.TypeString,
 				Required: false,
 				Computed: true,
 			},
-
-			"json": &schema.Schema{
+			"json": {
 				Type:     schema.TypeString,
 				Required: false,
 				Computed: true,
@@ -59,42 +54,35 @@ func resourcePipeline() *schema.Resource {
 		Delete: resourcePipelineDelete,
 
 		Schema: map[string]*schema.Schema{
-			"pipeline_name": &schema.Schema{
+			"pipeline_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"is_exposed": &schema.Schema{
+			"is_exposed": {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-
-			"is_paused": &schema.Schema{
+			"is_paused": {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-
-			"pipeline_config_format": &schema.Schema{
+			"pipeline_config_format": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"pipeline_config": &schema.Schema{
+			"pipeline_config": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"json": &schema.Schema{
+			"json": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"yaml": &schema.Schema{
+			"yaml": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -146,7 +134,7 @@ func readPipeline(
 
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Error looking up pipeline %s within team '%s': %s",
+			"error looking up pipeline %s within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -163,7 +151,7 @@ func readPipeline(
 	pipelineCfgJSON, err := JSONToJSON(string(pipelineCfg))
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Encountered error parsing pipeline %s config within team '%s': %s",
+			"encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -172,7 +160,7 @@ func readPipeline(
 
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Encountered error parsing pipeline %s config within team '%s': %s",
+			"encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -195,7 +183,7 @@ func dataPipelineRead(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf(
-			"Error reading pipeline %s from team '%s': %s",
+			"error reading pipeline %s from team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -226,7 +214,7 @@ func resourcePipelineRead(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf(
-			"Error reading pipeline %s from team '%s': %s",
+			"error reading pipeline %s from team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -259,7 +247,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 		if err != nil {
 			return fmt.Errorf(
-				"Error deleting old pipeline %s in team %s: %s",
+				"error deleting old pipeline %s in team %s: %s",
 				oldPipelineName, oldTeamName, err,
 			)
 		}
@@ -276,7 +264,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 		if err != nil {
 			return fmt.Errorf(
-				"Error renaming pipeline %s to %s in team %s: %s %s",
+				"error renaming pipeline %s to %s in team %s: %s %s",
 				oldPipelineName, newPipelineName, teamName, err, SerializeWarnings(warnings),
 			)
 		}
@@ -294,7 +282,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf(
-			"Error looking up pipeline %s in team %s: %s",
+			"error looking up pipeline %s in team %s: %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -302,7 +290,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
 
 	if err != nil {
-		return fmt.Errorf("Error parsing pipeline_config: %s", err)
+		return fmt.Errorf("error parsing pipeline_config: %s", err)
 	}
 
 	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
@@ -311,7 +299,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf(
-			"Encountered error setting config for pipeline %s in team '%s': %s",
+			"encountered error setting config for pipeline %s in team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -323,7 +311,7 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 
 		return fmt.Errorf(
-			"Encountered pipeline warnings (%s/%s):\n %s",
+			"encountered pipeline warnings (%s/%s):\n %s",
 			pipelineName, teamName, warnings,
 		)
 	}
@@ -332,13 +320,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		found, err := team.ExposePipeline(pipelineName)
 		if err != nil {
 			return fmt.Errorf(
-				"Error exposing pipeline %s in team '%s': %s",
+				"error exposing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
 			return fmt.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
+				"could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
@@ -346,13 +334,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		found, err := team.HidePipeline(pipelineName)
 		if err != nil {
 			return fmt.Errorf(
-				"Error hiding pipeline %s in team '%s': %s",
+				"error hiding pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
 			return fmt.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
+				"could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
@@ -362,13 +350,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		found, err := team.PausePipeline(pipelineName)
 		if err != nil {
 			return fmt.Errorf(
-				"Error pausing pipeline %s in team '%s': %s",
+				"error pausing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
 			return fmt.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
+				"could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
@@ -376,13 +364,13 @@ func resourcePipelineUpdate(d *schema.ResourceData, m interface{}) error {
 		found, err := team.UnpausePipeline(pipelineName)
 		if err != nil {
 			return fmt.Errorf(
-				"Error unpausing pipeline %s in team '%s': %s",
+				"error unpausing pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
 		if !found {
 			return fmt.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
+				"could not find pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
@@ -401,14 +389,14 @@ func resourcePipelineDelete(d *schema.ResourceData, m interface{}) error {
 
 	if err != nil {
 		return fmt.Errorf(
-			"Could not delete pipeline %s from team %s: %s",
+			"could not delete pipeline %s from team %s: %s",
 			pipelineName, teamName, err,
 		)
 	}
 
 	if !deleted {
 		return fmt.Errorf(
-			"Could not delete pipeline %s from team %s", pipelineName, teamName,
+			"could not delete pipeline %s from team %s", pipelineName, teamName,
 		)
 	}
 
