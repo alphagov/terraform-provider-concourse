@@ -36,5 +36,5 @@ jobs:
         env:
           CONCOURSE_VERSION: ${{ matrix.concourse-version }}
         run: |
-          sudo -E make integration-tests-prep-keys
+          sudo --preserve-env make integration-tests-prep-keys
           make integration-tests
