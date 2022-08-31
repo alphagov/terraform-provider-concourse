@@ -136,6 +136,14 @@ jobs:
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+				},
+
+				resource.TestStep{
 					// Pause and expose the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -198,6 +206,14 @@ jobs:
 							return nil
 						},
 					),
+				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
 				resource.TestStep{
@@ -266,6 +282,14 @@ jobs:
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+				},
+
+				resource.TestStep{
 					// Update the pipeline configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -328,6 +352,14 @@ jobs:
 							return nil
 						},
 					),
+				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
 				resource.TestStep{
@@ -396,6 +428,14 @@ jobs:
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+				},
+
+				resource.TestStep{
 					// Rename the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -458,6 +498,14 @@ jobs:
 							return nil
 						},
 					),
+				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
 				resource.TestStep{

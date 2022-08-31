@@ -104,6 +104,13 @@ var _ = Describe("Team management", func() {
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.a_team",
+					ImportStateVerify: true,
+				},
+
+				resource.TestStep{
 					// Add another user as another owner
 
 					Config: `resource "concourse_team" "a_team" {
@@ -156,6 +163,13 @@ var _ = Describe("Team management", func() {
 							return nil
 						},
 					),
+				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.a_team",
+					ImportStateVerify: true,
 				},
 
 				resource.TestStep{
@@ -218,6 +232,13 @@ var _ = Describe("Team management", func() {
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.a_team",
+					ImportStateVerify: true,
+				},
+
+				resource.TestStep{
 					// Removing a user, adding a group
 
 					Config: `resource "concourse_team" "a_team" {
@@ -273,6 +294,13 @@ var _ = Describe("Team management", func() {
 				},
 
 				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.a_team",
+					ImportStateVerify: true,
+				},
+
+				resource.TestStep{
 					// New team
 
 					Config: `resource "concourse_team" "new_team" {
@@ -319,6 +347,14 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.new_team",
+					ImportStateVerify: true,
+				},
+
 				resource.TestStep{
 					// Rename the team
 
@@ -365,6 +401,13 @@ var _ = Describe("Team management", func() {
 							return nil
 						},
 					),
+				},
+
+				resource.TestStep{
+					// check this state is importable
+					ImportState: true,
+					ResourceName: "concourse_team.a_team",
+					ImportStateVerify: true,
 				},
 
 				resource.TestStep{

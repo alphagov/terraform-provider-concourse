@@ -155,3 +155,17 @@ resource "concourse_pipeline" "my_pipeline" {
   pipeline_config_format = "json"
 }
 ```
+
+## Import
+
+Concourse teams can be imported using the team name e.g.
+
+```
+ $ terraform import concourse_pipeline.my_team my-team
+```
+
+Concourse pipelines can be imported using the team name and pipeline name e.g.
+
+```
+ $ terraform import concourse_pipeline.my_app my-team:my-app
+```
