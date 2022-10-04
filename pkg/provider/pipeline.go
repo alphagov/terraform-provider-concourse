@@ -81,6 +81,7 @@ func resourcePipeline() *schema.Resource {
 			"team_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"is_exposed": &schema.Schema{
@@ -270,25 +271,7 @@ func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 
-	if d.HasChange("team_name") && d.Id() != "" {
-		// Concourse does not yet have support for moving pipeline, so we should
-		// delete the pipeline from the old team
-
-		oldTeamName := strings.SplitN(d.Id(), ":", 2)[0]
-		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
-
-		team := client.Team(oldTeamName)
-		_, err := team.DeletePipeline(oldPipelineName)
-
-		if err != nil {
-			return diag.Errorf(
-				"Error deleting old pipeline %s in team %s: %s",
-				oldPipelineName, oldTeamName, err,
-			)
-		}
-	}
-
-	if d.HasChange("pipeline_name") && !d.HasChange("team_name") && d.Id() != "" {
+	if d.HasChange("pipeline_name") && d.Id() != "" {
 		teamName := strings.SplitN(d.Id(), ":", 2)[0]
 		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
 		newPipelineName := d.Get("pipeline_name").(string)
