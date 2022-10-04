@@ -249,11 +249,7 @@ func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) di
 }
 
 func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return resourceTeamCreateUpdate(ctx, d, m, true)
-}
-
-func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return resourceTeamCreateUpdate(ctx, d, m, false)
+	return resourceTeamUpdate(ctx, d, m)
 }
 
 func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -274,69 +270,77 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func resourceTeamCreateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}, create bool) diag.Diagnostics {
+func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
-	teamName := d.Get("team_name").(string)
-	auths := make(map[string][]string)
 
-	var authline []string
-	roleEnabled := make(map[string]bool)
+	if d.HasChange("team_name") && !d.IsNewResource() {
+		oldTeamNameRaw, newTeamNameRaw := d.GetChange("team_name")
+		oldTeamName := oldTeamNameRaw.(string)
+		newTeamName := newTeamNameRaw.(string)
+		_, warnings, err := client.Team(oldTeamName).RenameTeam(oldTeamName, newTeamName)
 
-	// fetches input from terraform and breaks out user/groups that prepend the string
-	for _, role := range roleNames {
-
-		// concourse calls things: "pipeline-operator", terraform calls them: "pipeline_operators"
-		terraformRoleName := strings.ReplaceAll(role, "-", "_") + "s"
-
-		for _, terraformInput := range d.Get(terraformRoleName).(*schema.Set).List() {
-			roleEnabled[role] = true
-			authline = strings.Split(terraformInput.(string), ":")
-			switch authline[0] {
-			case "user":
-				auths[role+"_users"] = append(auths[role+"_users"], strings.Join(authline[1:], ":"))
-			case "group":
-				auths[role+"_groups"] = append(auths[role+"_groups"], strings.Join(authline[1:], ":"))
-			}
+		if err != nil {
+			return diag.Errorf("Could not rename team %s to %s %s", oldTeamName, newTeamName, SerializeWarnings(warnings))
 		}
+
+		d.SetId(newTeamName)
 	}
 
-	teamDetails := atc.Team{
-		Name: teamName,
-		Auth: atc.TeamAuth{},
-	}
+	if d.HasChangeExcept("team_name") || d.IsNewResource() {
+		auths := make(map[string][]string)
 
-	// we cant set a role into the TeamAuth struct if it doesnt exist
-	// otherwise sending the atc.Team to concourse creates "role": null entries
-	for _, role := range roleNames {
-		if roleEnabled[role] == true {
-			teamDetails.Auth[role] = map[string][]string{}
-			for _, roleType := range roleTypes {
-				roleValues := auths[role+"_"+roleType]
-				if len(roleValues) > 0 {
-					teamDetails.Auth[role][roleType] = roleValues
+		var authline []string
+		roleEnabled := make(map[string]bool)
+
+		// fetches input from terraform and breaks out user/groups that prepend the string
+		for _, role := range roleNames {
+
+			// concourse calls things: "pipeline-operator", terraform calls them: "pipeline_operators"
+			terraformRoleName := strings.ReplaceAll(role, "-", "_") + "s"
+
+			for _, terraformInput := range d.Get(terraformRoleName).(*schema.Set).List() {
+				roleEnabled[role] = true
+				authline = strings.Split(terraformInput.(string), ":")
+				switch authline[0] {
+				case "user":
+					auths[role+"_users"] = append(auths[role+"_users"], strings.Join(authline[1:], ":"))
+				case "group":
+					auths[role+"_groups"] = append(auths[role+"_groups"], strings.Join(authline[1:], ":"))
 				}
 			}
 		}
-	}
 
-	team := client.Team(teamName)
+		teamName := d.Get("team_name").(string)
+		team := client.Team(teamName)
 
-	if d.HasChange("team_name") && !create {
-		_, warnings, err := team.RenameTeam(d.Id(), d.Get("team_name").(string))
+		teamDetails := atc.Team{
+			Name: teamName,
+			Auth: atc.TeamAuth{},
+		}
+
+		// we cant set a role into the TeamAuth struct if it doesnt exist
+		// otherwise sending the atc.Team to concourse creates "role": null entries
+		for _, role := range roleNames {
+			if roleEnabled[role] == true {
+				teamDetails.Auth[role] = map[string][]string{}
+				for _, roleType := range roleTypes {
+					roleValues := auths[role+"_"+roleType]
+					if len(roleValues) > 0 {
+						teamDetails.Auth[role][roleType] = roleValues
+					}
+				}
+			}
+		}
+
+		_, created, updated, warnings, err := team.CreateOrUpdate(teamDetails)
 
 		if err != nil {
-			return diag.Errorf("Could not rename team %s %s", teamName, SerializeWarnings(warnings))
+			return diag.Errorf("Error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
 		}
-	}
 
-	_, created, updated, warnings, err := team.CreateOrUpdate(teamDetails)
-
-	if err != nil {
-		return diag.Errorf("Error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
-	}
-
-	if !created && !updated {
-		return diag.Errorf("Could not create or update team %s", teamName)
+		if !created && !updated {
+			return diag.Errorf("Could not create or update team %s", teamName)
+		}
 	}
 
 	return resourceTeamRead(ctx, d, m)
