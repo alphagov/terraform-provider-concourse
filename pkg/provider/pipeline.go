@@ -271,12 +271,13 @@ func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 
-	if d.HasChange("pipeline_name") && d.Id() != "" {
-		teamName := strings.SplitN(d.Id(), ":", 2)[0]
-		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
-		newPipelineName := d.Get("pipeline_name").(string)
+	teamName := d.Get("team_name").(string)
+	team := client.Team(teamName)
 
-		team := client.Team(teamName)
+	if d.HasChange("pipeline_name") && !d.IsNewResource() {
+		oldPipelineNameRaw, newPipelineNameRaw := d.GetChange("pipeline_name")
+		oldPipelineName := oldPipelineNameRaw.(string)
+		newPipelineName := newPipelineNameRaw.(string)
 
 		_, warnings, err := team.RenamePipeline(oldPipelineName, newPipelineName)
 
@@ -286,111 +287,116 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				oldPipelineName, newPipelineName, teamName, err, SerializeWarnings(warnings),
 			)
 		}
+
+		d.SetId(pipelineID(teamName, newPipelineName))
 	}
 
 	pipelineName := d.Get("pipeline_name").(string)
-	teamName := d.Get("team_name").(string)
-	d.SetId(pipelineID(teamName, pipelineName))
-	team := client.Team(teamName)
 
-	pipelineConfig := d.Get("pipeline_config").(string)
-	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
+	if d.HasChanges("pipeline_config", "pipeline_config_format") || d.IsNewResource() {
+		pipelineConfig := d.Get("pipeline_config").(string)
+		pipelineConfigFormat := d.Get("pipeline_config_format").(string)
 
-	pipeline, _, err := readPipeline(ctx, client, teamName, pipelineName)
+		pipeline, _, err := readPipeline(ctx, client, teamName, pipelineName)
 
-	if err != nil {
-		return diag.Errorf(
-			"Error looking up pipeline %s in team %s: %s",
-			pipelineName, teamName, err,
+		if err != nil {
+			return diag.Errorf(
+				"Error looking up pipeline %s in team %s: %s",
+				pipelineName, teamName, err,
+			)
+		}
+
+		parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
+
+		if err != nil {
+			return diag.Errorf("Error parsing pipeline_config: %s", err)
+		}
+
+		_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
+			pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
 		)
-	}
 
-	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
-
-	if err != nil {
-		return diag.Errorf("Error parsing pipeline_config: %s", err)
-	}
-
-	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
-		pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
-	)
-
-	if err != nil {
-		return diag.Errorf(
-			"Encountered error setting config for pipeline %s in team '%s': %s",
-			pipelineName, teamName, err,
-		)
-	}
-
-	if len(configWarnings) != 0 {
-		warnings := ""
-		for _, w := range configWarnings {
-			warnings += fmt.Sprintf("%s: %s\n", w.Type, w.Message)
-		}
-
-		return diag.Errorf(
-			"Encountered pipeline warnings (%s/%s):\n %s",
-			pipelineName, teamName, warnings,
-		)
-	}
-
-	if d.Get("is_exposed").(bool) {
-		found, err := team.ExposePipeline(pipelineName)
 		if err != nil {
 			return diag.Errorf(
-				"Error exposing pipeline %s in team '%s': %s",
+				"Encountered error setting config for pipeline %s in team '%s': %s",
 				pipelineName, teamName, err,
 			)
 		}
-		if !found {
+
+		if len(configWarnings) != 0 {
+			warnings := ""
+			for _, w := range configWarnings {
+				warnings += fmt.Sprintf("%s: %s\n", w.Type, w.Message)
+			}
+
 			return diag.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
-		}
-	} else {
-		found, err := team.HidePipeline(pipelineName)
-		if err != nil {
-			return diag.Errorf(
-				"Error hiding pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
-		}
-		if !found {
-			return diag.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
+				"Encountered pipeline warnings (%s/%s):\n %s",
+				pipelineName, teamName, warnings,
 			)
 		}
 	}
 
-	if d.Get("is_paused").(bool) {
-		found, err := team.PausePipeline(pipelineName)
-		if err != nil {
-			return diag.Errorf(
-				"Error pausing pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
+	if d.HasChange("is_exposed") || d.IsNewResource() {
+		if d.Get("is_exposed").(bool) {
+			found, err := team.ExposePipeline(pipelineName)
+			if err != nil {
+				return diag.Errorf(
+					"Error exposing pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+			if !found {
+				return diag.Errorf(
+					"Could not find pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+		} else {
+			found, err := team.HidePipeline(pipelineName)
+			if err != nil {
+				return diag.Errorf(
+					"Error hiding pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+			if !found {
+				return diag.Errorf(
+					"Could not find pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
 		}
-		if !found {
-			return diag.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
-		}
-	} else {
-		found, err := team.UnpausePipeline(pipelineName)
-		if err != nil {
-			return diag.Errorf(
-				"Error unpausing pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
-		}
-		if !found {
-			return diag.Errorf(
-				"Could not find pipeline %s in team '%s': %s",
-				pipelineName, teamName, err,
-			)
+	}
+
+	if d.HasChange("is_paused") || d.IsNewResource() {
+		if d.Get("is_paused").(bool) {
+			found, err := team.PausePipeline(pipelineName)
+			if err != nil {
+				return diag.Errorf(
+					"Error pausing pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+			if !found {
+				return diag.Errorf(
+					"Could not find pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+		} else {
+			found, err := team.UnpausePipeline(pipelineName)
+			if err != nil {
+				return diag.Errorf(
+					"Error unpausing pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
+			if !found {
+				return diag.Errorf(
+					"Could not find pipeline %s in team '%s': %s",
+					pipelineName, teamName, err,
+				)
+			}
 		}
 	}
 
