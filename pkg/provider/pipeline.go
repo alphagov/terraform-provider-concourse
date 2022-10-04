@@ -61,15 +61,7 @@ func resourcePipeline() *schema.Resource {
 		DeleteContext: resourcePipelineDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: func(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				teamName, pipelineName, err := parsePipelineID(d.Id())
-				if err != nil {
-					return []*schema.ResourceData{d}, err
-				}
-				d.Set("team_name", teamName)
-				d.Set("pipeline_name", pipelineName)
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -247,8 +239,10 @@ func resourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
-	pipelineName := d.Get("pipeline_name").(string)
-	teamName := d.Get("team_name").(string)
+	teamName, pipelineName, err := parsePipelineID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	pipeline, wasFound, err := readPipeline(ctx, client, teamName, pipelineName)
 
@@ -260,7 +254,9 @@ func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if wasFound {
-		d.SetId(pipelineID(teamName, pipelineName))
+		d.SetId(pipelineID(pipeline.TeamName, pipeline.PipelineName))
+		d.Set("team_name", pipeline.TeamName)
+		d.Set("pipeline_name", pipeline.PipelineName)
 		d.Set("is_exposed", pipeline.IsExposed)
 		d.Set("is_paused", pipeline.IsPaused)
 		d.Set("json", pipeline.JSON)
