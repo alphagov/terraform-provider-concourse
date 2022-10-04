@@ -81,6 +81,7 @@ func resourcePipeline() *schema.Resource {
 			"team_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"is_exposed": &schema.Schema{
@@ -270,30 +271,13 @@ func resourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 
-	if d.HasChange("team_name") && d.Id() != "" {
-		// Concourse does not yet have support for moving pipeline, so we should
-		// delete the pipeline from the old team
+	teamName := d.Get("team_name").(string) // team_name cannot have a change because it has `ForceNew: true` in the resource schema
+	team := client.Team(teamName)
 
-		oldTeamName := strings.SplitN(d.Id(), ":", 2)[0]
-		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
-
-		team := client.Team(oldTeamName)
-		_, err := team.DeletePipeline(oldPipelineName)
-
-		if err != nil {
-			return diag.Errorf(
-				"Error deleting old pipeline %s in team %s: %s",
-				oldPipelineName, oldTeamName, err,
-			)
-		}
-	}
-
-	if d.HasChange("pipeline_name") && !d.HasChange("team_name") && d.Id() != "" {
-		teamName := strings.SplitN(d.Id(), ":", 2)[0]
-		oldPipelineName := strings.SplitN(d.Id(), ":", 2)[1]
-		newPipelineName := d.Get("pipeline_name").(string)
-
-		team := client.Team(teamName)
+	if d.HasChange("pipeline_name") && !d.IsNewResource() {
+		oldPipelineNameRaw, newPipelineNameRaw := d.GetChange("pipeline_name")
+		oldPipelineName := oldPipelineNameRaw.(string)
+		newPipelineName := newPipelineNameRaw.(string)
 
 		_, warnings, err := team.RenamePipeline(oldPipelineName, newPipelineName)
 
@@ -303,12 +287,10 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				oldPipelineName, newPipelineName, teamName, err, SerializeWarnings(warnings),
 			)
 		}
+		d.SetId(pipelineID(teamName, newPipelineName))
 	}
 
 	pipelineName := d.Get("pipeline_name").(string)
-	teamName := d.Get("team_name").(string)
-	d.SetId(pipelineID(teamName, pipelineName))
-	team := client.Team(teamName)
 
 	pipelineConfig := d.Get("pipeline_config").(string)
 	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
