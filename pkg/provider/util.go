@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/concourse/concourse/vars"
 	"github.com/ghodss/yaml"
 	"strings"
 )
@@ -51,6 +52,7 @@ func JSONToYAML(inputJSON string) (string, error) {
 func ParsePipelineConfig(
 	pipelineConfig string,
 	pipelineConfigFormat string,
+	inputVars map[string]interface{},
 ) (string, error) {
 	if pipelineConfigFormat != "json" && pipelineConfigFormat != "yaml" {
 		return "", fmt.Errorf("pipeline_config_format must be json or yaml")
@@ -58,6 +60,16 @@ func ParsePipelineConfig(
 
 	var err error
 	outputJSON := ""
+
+	if inputVars != nil {
+		params := []vars.Variables{vars.StaticVariables(inputVars)}
+		evaluatedConfig, err := vars.NewTemplateResolver([]byte(pipelineConfig), params).Resolve(false, false)
+		if err != nil {
+			return "", err
+		}
+
+		pipelineConfig = string(evaluatedConfig[:])
+	}
 
 	if pipelineConfigFormat == "json" {
 		outputJSON, err = JSONToJSON(pipelineConfig)
