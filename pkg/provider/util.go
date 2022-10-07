@@ -52,10 +52,6 @@ func ParsePipelineConfig(
 	pipelineConfig string,
 	pipelineConfigFormat string,
 ) (string, error) {
-	if pipelineConfigFormat != "json" && pipelineConfigFormat != "yaml" {
-		return "", fmt.Errorf("pipeline_config_format must be json or yaml")
-	}
-
 	var err error
 	outputJSON := ""
 
