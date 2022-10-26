@@ -16,35 +16,30 @@ func dataPipeline() *schema.Resource {
 		ReadContext: dataPipelineRead,
 
 		Schema: map[string]*schema.Schema{
-			"pipeline_name": &schema.Schema{
+			"pipeline_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"is_exposed": &schema.Schema{
+			"is_exposed": {
 				Type:     schema.TypeBool,
 				Required: false,
 				Computed: true,
 			},
-
-			"is_paused": &schema.Schema{
+			"is_paused": {
 				Type:     schema.TypeBool,
 				Required: false,
 				Computed: true,
 			},
-
-			"yaml": &schema.Schema{
+			"yaml": {
 				Type:     schema.TypeString,
 				Required: false,
 				Computed: true,
 			},
-
-			"json": &schema.Schema{
+			"json": {
 				Type:     schema.TypeString,
 				Required: false,
 				Computed: true,
@@ -73,42 +68,35 @@ func resourcePipeline() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"pipeline_name": &schema.Schema{
+			"pipeline_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"is_exposed": &schema.Schema{
+			"is_exposed": {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-
-			"is_paused": &schema.Schema{
+			"is_paused": {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-
-			"pipeline_config_format": &schema.Schema{
+			"pipeline_config_format": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"pipeline_config": &schema.Schema{
+			"pipeline_config": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"json": &schema.Schema{
+			"json": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"yaml": &schema.Schema{
+			"yaml": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -169,7 +157,7 @@ func readPipeline(
 
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Error looking up pipeline %s within team '%s': %s",
+			"error looking up pipeline %s within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -186,7 +174,7 @@ func readPipeline(
 	pipelineCfgJSON, err := JSONToJSON(string(pipelineCfg))
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Encountered error parsing pipeline %s config within team '%s': %s",
+			"encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}
@@ -195,7 +183,7 @@ func readPipeline(
 
 	if err != nil {
 		return retVal, false, fmt.Errorf(
-			"Encountered error parsing pipeline %s config within team '%s': %s",
+			"encountered error parsing pipeline %s config within team '%s': %s",
 			pipelineName, teamName, err,
 		)
 	}

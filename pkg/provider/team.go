@@ -27,12 +27,11 @@ func dataTeam() *schema.Resource {
 		ReadContext: dataTeamRead,
 
 		Schema: map[string]*schema.Schema{
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"owners": &schema.Schema{
+			"owners": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -40,8 +39,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"members": &schema.Schema{
+			"members": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -49,8 +47,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"pipeline_operators": &schema.Schema{
+			"pipeline_operators": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -58,8 +55,7 @@ func dataTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"viewers": &schema.Schema{
+			"viewers": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Set:      schema.HashString,
@@ -85,13 +81,11 @@ func resourceTeam() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"owners": &schema.Schema{
+			"owners": {
 				Type:     schema.TypeSet,
 				Required: true,
 				Set:      schema.HashString,
@@ -102,8 +96,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"members": &schema.Schema{
+			"members": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -114,8 +107,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"pipeline_operators": &schema.Schema{
+			"pipeline_operators": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -126,8 +118,7 @@ func resourceTeam() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"viewers": &schema.Schema{
+			"viewers": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Set:      schema.HashString,
@@ -143,7 +134,7 @@ func resourceTeam() *schema.Resource {
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
-				Type: resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
+				Type:    resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: resourceTeamStateUpgradeV0,
 				Version: 0,
 			},
@@ -308,7 +299,7 @@ func resourceTeamCreateUpdate(ctx context.Context, d *schema.ResourceData, m int
 	// we cant set a role into the TeamAuth struct if it doesnt exist
 	// otherwise sending the atc.Team to concourse creates "role": null entries
 	for _, role := range roleNames {
-		if roleEnabled[role] == true {
+		if roleEnabled[role] {
 			teamDetails.Auth[role] = map[string][]string{}
 			for _, roleType := range roleTypes {
 				roleValues := auths[role+"_"+roleType]

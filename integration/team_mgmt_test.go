@@ -9,9 +9,9 @@ import (
 
 	"github.com/alphagov/terraform-provider-concourse/pkg/provider"
 
+	"github.com/concourse/concourse/atc"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/concourse/concourse/atc"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -30,7 +30,7 @@ var _ = Describe("Team management", func() {
 			Providers: providers,
 
 			Steps: []resource.TestStep{
-				resource.TestStep{
+				{
 					Config: `data "concourse_teams" "teams" {}`,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr("data.concourse_teams.teams", "names.#", "1"),
@@ -56,7 +56,7 @@ var _ = Describe("Team management", func() {
 			Providers: providers,
 
 			Steps: []resource.TestStep{
-				resource.TestStep{
+				{
 					// Add a user as an owner
 
 					Config: `resource "concourse_team" "a_team" {
@@ -102,15 +102,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.a_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.a_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// Add another user as another owner
 
 					Config: `resource "concourse_team" "a_team" {
@@ -164,15 +162,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.a_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.a_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// Change a user from an owner to a pipeline-operator
 
 					Config: `resource "concourse_team" "a_team" {
@@ -213,14 +209,14 @@ var _ = Describe("Team management", func() {
 
 							expectedTeamAuth := atc.TeamAuth{
 								"pipeline-operator": {
-								  "users": {
-								    "github:tlwr",
-								  },
+									"users": {
+										"github:tlwr",
+									},
 								},
 								"owner": {
-								  "users": {
-								    "github:terraform-provider-concourse",
-								  },
+									"users": {
+										"github:terraform-provider-concourse",
+									},
 								},
 							}
 
@@ -230,15 +226,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.a_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.a_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// Removing a user, adding a group
 
 					Config: `resource "concourse_team" "a_team" {
@@ -281,8 +275,8 @@ var _ = Describe("Team management", func() {
 
 							expectedTeamAuth := atc.TeamAuth{
 								"owner": {
-								  "users": {"github:terraform-provider-concourse"},
-								  "groups": {"github:alphagov:paas-team"},
+									"users":  {"github:terraform-provider-concourse"},
+									"groups": {"github:alphagov:paas-team"},
 								},
 							}
 
@@ -292,15 +286,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.a_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.a_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// New team
 
 					Config: `resource "concourse_team" "new_team" {
@@ -347,15 +339,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.new_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.new_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// Rename the team
 
 					Config: `resource "concourse_team" "a_team" {
@@ -402,15 +392,13 @@ var _ = Describe("Team management", func() {
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_team.a_team",
+					ImportState:       true,
+					ResourceName:      "concourse_team.a_team",
 					ImportStateVerify: true,
 				},
-
-				resource.TestStep{
+				{
 					// Delete the team
 
 					Config: `# Cannot be empty`,

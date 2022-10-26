@@ -11,13 +11,11 @@ import (
 func resourceTeamResourceV0() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-
-			"team_name": &schema.Schema{
+			"team_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			"owners": &schema.Schema{
+			"owners": {
 				Type:     schema.TypeList,
 				Required: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -27,8 +25,7 @@ func resourceTeamResourceV0() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"members": &schema.Schema{
+			"members": {
 				Type:     schema.TypeList,
 				Optional: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -38,8 +35,7 @@ func resourceTeamResourceV0() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"pipeline_operators": &schema.Schema{
+			"pipeline_operators": {
 				Type:     schema.TypeList,
 				Optional: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -49,8 +45,7 @@ func resourceTeamResourceV0() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-
-			"viewers": &schema.Schema{
+			"viewers": {
 				Type:     schema.TypeList,
 				Optional: true,
 				DefaultFunc: func() (interface{}, error) {
@@ -77,13 +72,13 @@ func resourceTeamStateUpgradeV0(
 		splitKey := strings.Split(k, ".")
 		if len(splitKey) == 2 && strings.IndexFunc(splitKey[1], isNotDigit) == -1 {
 			switch splitKey[0] {
-				case
-					"owners",
-					"members",
-					"pipeline_operators",
-					"viewers":
-					rawStateOut[fmt.Sprintf("%s.%d", splitKey[0], schema.HashString(v))] = v
-					continue
+			case
+				"owners",
+				"members",
+				"pipeline_operators",
+				"viewers":
+				rawStateOut[fmt.Sprintf("%s.%d", splitKey[0], schema.HashString(v))] = v
+				continue
 			}
 		}
 		rawStateOut[k] = v
