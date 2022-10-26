@@ -134,16 +134,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Pause and expose the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -207,16 +205,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Unpause and hide the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -280,16 +276,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Update the pipeline configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -353,16 +347,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Move a pipeline from one team to another
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -426,16 +418,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Rename the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -499,16 +489,14 @@ jobs:
 						},
 					),
 				},
-
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
-
-				resource.TestStep{
+				{
 					// Delete the pipeline
 
 					Config: `data "concourse_team" "main_team" {
