@@ -1,14 +1,15 @@
 package provider
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataTeams() *schema.Resource {
 	return &schema.Resource{
-		Read: dataTeamsReads,
+		ReadContext: dataTeamsReads,
 		Schema: map[string]*schema.Schema{
 			"names": {
 				Type:     schema.TypeSet,
@@ -19,11 +20,11 @@ func dataTeams() *schema.Resource {
 	}
 }
 
-func dataTeamsReads(d *schema.ResourceData, m interface{}) error {
+func dataTeamsReads(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	teams, err := client.ListTeams()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var names []string
@@ -34,7 +35,7 @@ func dataTeamsReads(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId("concourse_teams")
 	if err := d.Set("names", names); err != nil {
-		return fmt.Errorf("error setting team names: %s", err)
+		return diag.Errorf("error setting team names: %s", err)
 	}
 
 	return nil

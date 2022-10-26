@@ -1,11 +1,12 @@
 package provider
 
 import (
-	"fmt"
+	"context"
 	"strings"
 
 	"github.com/concourse/concourse/atc"
 	"github.com/concourse/concourse/go-concourse/concourse"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -23,7 +24,7 @@ var roleTypes = []string{
 
 func dataTeam() *schema.Resource {
 	return &schema.Resource{
-		Read: dataTeamRead,
+		ReadContext: dataTeamRead,
 
 		Schema: map[string]*schema.Schema{
 			"team_name": {
@@ -68,10 +69,16 @@ func dataTeam() *schema.Resource {
 
 func resourceTeam() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTeamCreate,
-		Read:   resourceTeamRead,
-		Update: resourceTeamUpdate,
-		Delete: resourceTeamDelete,
+		CreateContext: resourceTeamCreate,
+		ReadContext:   resourceTeamRead,
+		UpdateContext: resourceTeamUpdate,
+		DeleteContext: resourceTeamDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: func(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				d.Set("team_name", d.Id())
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"team_name": {
@@ -157,9 +164,10 @@ func (t *teamHelper) appendElem(field string, elem string) {
 }
 
 func readTeam(
+	ctx context.Context,
 	client concourse.Client,
 	teamName string,
-) (teamHelper, error) {
+) (teamHelper, diag.Diagnostics) {
 
 	retVal := teamHelper{
 		TeamName: teamName,
@@ -168,7 +176,7 @@ func readTeam(
 	teams, err := client.ListTeams()
 
 	if err != nil {
-		return retVal, err
+		return retVal, diag.FromErr(err)
 	}
 
 	var foundTeam *atc.Team
@@ -181,7 +189,7 @@ func readTeam(
 	}
 
 	if foundTeam == nil {
-		return retVal, fmt.Errorf("could not find team %s", teamName)
+		return retVal, diag.Errorf("Could not find team %s", teamName)
 	}
 
 	var (
@@ -213,11 +221,11 @@ func readTeam(
 	return retVal, nil
 }
 
-func dataTeamRead(d *schema.ResourceData, m interface{}) error {
+func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
 
-	team, err := readTeam(client, teamName)
+	team, err := readTeam(ctx, client, teamName)
 
 	if err != nil {
 		return err
@@ -231,19 +239,19 @@ func dataTeamRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
-	return resourceTeamCreateUpdate(d, m, true)
+func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return resourceTeamCreateUpdate(ctx, d, m, true)
 }
 
-func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceTeamCreateUpdate(d, m, false)
+func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return resourceTeamCreateUpdate(ctx, d, m, false)
 }
 
-func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
+func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
 
-	team, err := readTeam(client, teamName)
+	team, err := readTeam(ctx, client, teamName)
 
 	if err != nil {
 		return err
@@ -257,7 +265,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool) error {
+func resourceTeamCreateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}, create bool) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
 	auths := make(map[string][]string)
@@ -308,29 +316,29 @@ func resourceTeamCreateUpdate(d *schema.ResourceData, m interface{}, create bool
 		_, warnings, err := team.RenameTeam(d.Id(), d.Get("team_name").(string))
 
 		if err != nil {
-			return fmt.Errorf("could not rename team %s %s", teamName, SerializeWarnings(warnings))
+			return diag.Errorf("Could not rename team %s %s", teamName, SerializeWarnings(warnings))
 		}
 	}
 
 	_, created, updated, warnings, err := team.CreateOrUpdate(teamDetails)
 
 	if err != nil {
-		return fmt.Errorf("error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
+		return diag.Errorf("Error creating/updating team %s: %s %s", teamName, err, SerializeWarnings(warnings))
 	}
 
 	if !created && !updated {
-		return fmt.Errorf("could not create or update team %s", teamName)
+		return diag.Errorf("Could not create or update team %s", teamName)
 	}
 
-	return resourceTeamRead(d, m)
+	return resourceTeamRead(ctx, d, m)
 }
 
-func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
+func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
 	teamName := d.Get("team_name").(string)
 
 	if teamName == "main" {
-		return fmt.Errorf("cannot delete main team")
+		return diag.Errorf("Cannot delete main team")
 	}
 
 	team := client.Team(teamName)
@@ -338,7 +346,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	err := team.DestroyTeam(teamName)
 
 	if err != nil {
-		return fmt.Errorf("could not delete team %s: %s", teamName, err)
+		return diag.Errorf("Could not delete team %s: %s", teamName, err)
 	}
 
 	d.SetId("")

@@ -4,7 +4,7 @@ ARCH = $$(go env GOARCH)
 
 GENERATE_KEY := \
 		docker run --rm -v $$PWD/keys:/keys --user $$(id -u):$$(id -g) \
-		concourse/concourse:6.5 \
+		concourse/concourse:$${CONCOURSE_VERSION:-6.5.1} \
 		generate-key
 
 # shouldn't use CGO on binaries produced for the terraform registry

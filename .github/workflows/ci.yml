@@ -33,6 +33,8 @@ jobs:
           docker-compose up -d && docker-compose down
 
       - name: integration-tests
+        env:
+          CONCOURSE_VERSION: ${{ matrix.concourse-version }}
         run: |
-          sudo make integration-tests-prep-keys
+          sudo --preserve-env make integration-tests-prep-keys
           make integration-tests
