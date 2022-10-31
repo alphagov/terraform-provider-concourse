@@ -103,7 +103,7 @@ func resourcePipeline() *schema.Resource {
 				Required: true,
 			},
 
-			"vars": {
+			"vars": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
