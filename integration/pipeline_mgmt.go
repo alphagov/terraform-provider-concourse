@@ -156,9 +156,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -229,9 +229,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -302,9 +302,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -451,9 +451,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -524,9 +524,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -597,9 +597,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState:             true,
-					ResourceName:            "concourse_pipeline.a_pipeline",
-					ImportStateVerify:       true,
+					ImportState: true,
+					ResourceName: "concourse_pipeline.a_pipeline",
+					ImportStateVerify: true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
