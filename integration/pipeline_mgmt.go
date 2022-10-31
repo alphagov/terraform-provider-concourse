@@ -54,6 +54,8 @@ jobs:
       trigger: true
 `
 
+		templatedPipelineConfigJSON = `{"jobs":[{"name":"check-the-time","plan":[{"get":"every-midnight","trigger":true}],"serial":true}],"resources":[{"name":"every-midnight","source":{"location":"Europe/Berlin","start":"12:00AM","stop":"12:15AM"},"type":"time"}]}`
+
 		updatedPipelineConfig = `#
 resources:
   - name: every-midnight
@@ -154,9 +156,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -227,9 +229,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -300,9 +302,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -330,7 +332,7 @@ jobs:
 %s
                       PIPELINE
 					  vars = {
-						location = "Europe/London"
+						location = "Europe/Berlin"
 					  }
                    }`, templatedPipelineConfig),
 
@@ -346,7 +348,7 @@ jobs:
 						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "team_name", "main"),
 						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "is_exposed", "false"),
 						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "is_paused", "false"),
-						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "json", pipelineConfigJSON),
+						resource.TestCheckResourceAttr("concourse_pipeline.a_pipeline", "json", templatedPipelineConfigJSON),
 
 						func(s *terraform.State) error {
 							teams, err := client.ListTeams()
@@ -449,9 +451,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -522,9 +524,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
@@ -595,9 +597,9 @@ jobs:
 
 				resource.TestStep{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
 				},
 
