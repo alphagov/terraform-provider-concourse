@@ -103,6 +103,11 @@ func resourcePipeline() *schema.Resource {
 				Required: true,
 			},
 
+			"vars": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
+
 			"json": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -312,6 +317,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	pipelineConfig := d.Get("pipeline_config").(string)
 	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
+	vars := d.Get("vars").(map[string]interface{})
 
 	pipeline, _, err := readPipeline(ctx, client, teamName, pipelineName)
 
@@ -322,7 +328,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		)
 	}
 
-	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat)
+	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat, vars)
 
 	if err != nil {
 		return diag.Errorf("Error parsing pipeline_config: %s", err)
