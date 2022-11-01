@@ -14,7 +14,13 @@ jobs:
           - "6.7.0"
           - "7.0.0"
           - "7.8.2"
+        terraform-version:
+          - "1.2.9"
     steps:
+      # avoid confusion around which terraform is being used
+      - name: rm existing terraform
+        run: type -P terraform && sudo rm $(type -P terraform)
+
       - name: setup
         uses: actions/setup-go@v2
         with:
@@ -35,6 +41,7 @@ jobs:
       - name: integration-tests
         env:
           CONCOURSE_VERSION: ${{ matrix.concourse-version }}
+          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform-version }}
         run: |
           sudo --preserve-env make integration-tests-prep-keys
           make integration-tests
