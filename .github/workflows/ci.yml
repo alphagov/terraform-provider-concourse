@@ -15,7 +15,18 @@ jobs:
           - "7.0.0"
           - "7.8.2"
         terraform-version:
-          - "1.2.9"
+          - "1.2"
+        include:
+          - terraform-version: "0.13"
+            concourse-version: "7.8.2"
+          - terraform-version: "0.14"
+            concourse-version: "7.8.2"
+          - terraform-version: "0.15"
+            concourse-version: "7.8.2"
+          - terraform-version: "1.0"
+            concourse-version: "7.8.2"
+          - terraform-version: "1.1"
+            concourse-version: "7.8.2"
     steps:
       # avoid confusion around which terraform is being used
       - name: rm existing terraform
