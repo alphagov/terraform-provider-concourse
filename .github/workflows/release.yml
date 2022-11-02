@@ -7,38 +7,9 @@ on:
 
 jobs:
 
-  test:  # this is cloned from ci.yml until github actions support job reuse
+  test:
     if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        concourse-version:
-          - "6.5.1"
-          - "6.7.0"
-          - "7.0.0"
-          - "7.8.2"
-    steps:
-      - name: setup
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.18'
-
-      - name: checkout
-        uses: actions/checkout@v1
-
-      - name: unit-tests
-        run: make unit-tests
-
-      - name: ensure-containers-exist
-        env:
-          CONCOURSE_VERSION: ${{ matrix.concourse-version }}
-        run: |
-          docker-compose up -d && docker-compose down
-
-      - name: integration-tests
-        run: |
-          sudo make integration-tests-prep-keys
-          make integration-tests
+    uses: ./.github/workflows/ci.yml
 
   get-tag-name:
     runs-on: ubuntu-latest
