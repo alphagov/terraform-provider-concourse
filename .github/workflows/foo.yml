@@ -7,5 +7,4 @@ on:
 jobs:
 
   test:
-    if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
     uses: ./.github/workflows/ci.yml
