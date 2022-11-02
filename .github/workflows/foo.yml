@@ -1,0 +1,11 @@
+name: foo
+on:
+  push:
+    tags:
+      - 'release-test-*'
+
+jobs:
+
+  test:
+    if: ${{ github.repository_owner == 'terraform-provider-concourse' }}
+    uses: ./github/workflows/ci.yml
