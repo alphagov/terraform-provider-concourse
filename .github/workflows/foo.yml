@@ -1,7 +1,7 @@
 name: foo
 on:
   push:
-    tags:
+    branch:
       - 'release-test-*'
 
 jobs:
