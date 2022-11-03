@@ -78,10 +78,7 @@ func resourceTeam() *schema.Resource {
 		UpdateContext: resourceTeamUpdate,
 		DeleteContext: resourceTeamDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: func(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set("team_name", d.Id())
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -143,7 +140,7 @@ func resourceTeam() *schema.Resource {
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
-				Type: resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
+				Type:    resourceTeamResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: resourceTeamStateUpgradeV0,
 				Version: 0,
 			},
@@ -240,7 +237,8 @@ func dataTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return err
 	}
 
-	d.SetId(teamName)
+	d.SetId(team.TeamName)
+	d.Set("team_name", team.TeamName)
 	d.Set("owners", schema.NewSet(schema.HashString, team.Owners))
 	d.Set("members", schema.NewSet(schema.HashString, team.Members))
 	d.Set("pipeline_operators", schema.NewSet(schema.HashString, team.PipelineOperators))
@@ -258,15 +256,14 @@ func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ProviderConfig).Client
-	teamName := d.Get("team_name").(string)
-
-	team, err := readTeam(ctx, client, teamName)
+	team, err := readTeam(ctx, client, d.Id())
 
 	if err != nil {
 		return err
 	}
 
-	d.SetId(teamName)
+	d.SetId(team.TeamName)
+	d.Set("team_name", team.TeamName)
 	d.Set("owners", schema.NewSet(schema.HashString, team.Owners))
 	d.Set("members", schema.NewSet(schema.HashString, team.Members))
 	d.Set("pipeline_operators", schema.NewSet(schema.HashString, team.PipelineOperators))
@@ -339,6 +336,7 @@ func resourceTeamCreateUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.Errorf("Could not create or update team %s", teamName)
 	}
 
+	d.SetId(teamName)
 	return resourceTeamRead(ctx, d, m)
 }
 
