@@ -175,26 +175,17 @@ func readTeam(
 	teamName string,
 ) (teamHelper, diag.Diagnostics) {
 
+	team, err := client.FindTeam(teamName)
+
 	retVal := teamHelper{
 		TeamName: teamName,
 	}
-
-	teams, err := client.ListTeams()
 
 	if err != nil {
 		return retVal, diag.FromErr(err)
 	}
 
-	var foundTeam *atc.Team
-
-	for _, team := range teams {
-		if team.Name == teamName {
-			foundTeam = &team
-			break
-		}
-	}
-
-	if foundTeam == nil {
+	if team == nil {
 		return retVal, diag.Errorf("Could not find team %s", teamName)
 	}
 
@@ -204,7 +195,7 @@ func readTeam(
 	)
 
 	for _, roleName := range roleNames {
-		if role, ok = foundTeam.Auth[roleName]; !ok {
+		if role, ok = team.Auth()[roleName]; !ok {
 			continue
 		}
 
