@@ -9,6 +9,7 @@ import (
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func dataPipeline() *schema.Resource {
@@ -87,8 +88,9 @@ func resourcePipeline() *schema.Resource {
 			},
 
 			"pipeline_config_format": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"json", "yaml"}, false)),
 			},
 
 			"pipeline_config": &schema.Schema{
