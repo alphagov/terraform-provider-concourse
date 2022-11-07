@@ -140,6 +140,10 @@ resource "concourse_pipeline" "my_pipeline" {
 
   pipeline_config        = file("pipeline-config.yml")
   pipeline_config_format = "yaml"
+
+  vars = {
+    foo = "bar"
+  }
 }
 
 # OR
@@ -153,6 +157,10 @@ resource "concourse_pipeline" "my_pipeline" {
 
   pipeline_config        = file("pipeline-config.json")
   pipeline_config_format = "json"
+
+  vars = {
+    foo = "bar"
+  }
 }
 ```
 
