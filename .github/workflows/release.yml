@@ -81,7 +81,7 @@ jobs:
           cp artifacts/*.zip/*.zip gathered/
           pushd gathered
           sha256sum *.zip > $HASH_FILE_NAME
-          gpg --batch --local-user 95B055A2D6FF56B5D8A57849BDD24EEBEE0F9AE8 --detach-sign $HASH_FILE_NAME
+          gpg --batch --local-user E2CE34DCDC76573D80BC35533BA5353D6C041A26 --detach-sign $HASH_FILE_NAME
           popd
           find gathered/ -type f -printf '%f\n' | jq --raw-input -c --slurp '.[:-1] | split("\n")' > all_artifacts.json
           echo "::set-output name=hash_file_name::$HASH_FILE_NAME"
