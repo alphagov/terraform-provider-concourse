@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/concourse/concourse/atc"
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -153,7 +154,9 @@ func readPipeline(
 
 	team := client.Team(teamName)
 
-	pipeline, pipelineFound, err := team.Pipeline(pipelineName)
+	pipeline, pipelineFound, err := team.Pipeline(
+		atc.PipelineRef{Name: pipelineName},
+	)
 
 	if err != nil {
 		return retVal, false, err
@@ -164,7 +167,7 @@ func readPipeline(
 	}
 
 	atcConfig, version, pipelineCfgFound, err := team.PipelineConfig(
-		pipelineName,
+		atc.PipelineRef{Name: pipelineName},
 	)
 
 	if err != nil {
@@ -316,7 +319,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
-		pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
+		atc.PipelineRef{Name: pipelineName}, pipeline.ConfigVersion, []byte(parsedJSON), false,
 	)
 
 	if err != nil {
@@ -339,7 +342,9 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.Get("is_exposed").(bool) {
-		found, err := team.ExposePipeline(pipelineName)
+		found, err := team.ExposePipeline(
+			atc.PipelineRef{Name: pipelineName},
+		)
 		if err != nil {
 			return diag.Errorf(
 				"Error exposing pipeline %s in team '%s': %s",
@@ -353,7 +358,9 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			)
 		}
 	} else {
-		found, err := team.HidePipeline(pipelineName)
+		found, err := team.HidePipeline(
+			atc.PipelineRef{Name: pipelineName},
+		)
 		if err != nil {
 			return diag.Errorf(
 				"Error hiding pipeline %s in team '%s': %s",
@@ -369,7 +376,9 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.Get("is_paused").(bool) {
-		found, err := team.PausePipeline(pipelineName)
+		found, err := team.PausePipeline(
+			atc.PipelineRef{Name: pipelineName},
+		)
 		if err != nil {
 			return diag.Errorf(
 				"Error pausing pipeline %s in team '%s': %s",
@@ -383,7 +392,9 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			)
 		}
 	} else {
-		found, err := team.UnpausePipeline(pipelineName)
+		found, err := team.UnpausePipeline(
+			atc.PipelineRef{Name: pipelineName},
+		)
 		if err != nil {
 			return diag.Errorf(
 				"Error unpausing pipeline %s in team '%s': %s",
@@ -407,7 +418,9 @@ func resourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m inter
 	teamName := d.Get("team_name").(string)
 	team := client.Team(teamName)
 
-	deleted, err := team.DeletePipeline(pipelineName)
+	deleted, err := team.DeletePipeline(
+		atc.PipelineRef{Name: pipelineName},
+	)
 
 	if err != nil {
 		return diag.Errorf(
