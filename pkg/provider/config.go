@@ -36,12 +36,17 @@ func ProviderConfigurationBuilder(
 	team := d.Get("team").(string)
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
+	caFile := d.Get("ca_cert_file").(string)
+	skipCertificateVerification := d.Get("insecure_skip_verify").(bool)
 
 	if url != "" && team != "" && username != "" && password != "" {
 		c, err := client.NewConcourseClient(
 			url,
 			team,
-			username, password,
+			username,
+			password,
+			caFile,
+			skipCertificateVerification,
 		)
 
 		if err != nil {
