@@ -112,6 +112,9 @@ Specify users and groups by prefixing the strings:
 * `user:`
 * `group:`
 
+The value after the prefix is the connector-qualified identity, so any Concourse
+auth connector works, e.g. `github`, `oidc`, `ldap`, `saml`:
+
 ```hcl
 resource "concourse_team" "my_team" {
   team_name = "my-team"
@@ -120,6 +123,9 @@ resource "concourse_team" "my_team" {
     "group:github:org-name",
     "group:github:org-name:team-name",
     "user:github:tlwr",
+    "group:oidc:platform-admins",
+    "user:ldap:alice",
+    "group:saml:sso-admins",
   ]
 
   viewers = [
