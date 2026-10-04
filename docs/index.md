@@ -164,6 +164,38 @@ resource "concourse_pipeline" "my_pipeline" {
 }
 ```
 
+#### Optional pipeline arguments
+
+* `vars` — map of string values interpolated into `((var))` placeholders
+  (equivalent to `fly set-pipeline --var`).
+* `yaml_vars` — map whose values are YAML documents, interpolated as structured
+  values (equivalent to `fly set-pipeline --yaml-var`). Useful for list/map vars
+  such as a var-sourced `across` step's `values`.
+* `archive_on_destroy` — when `true`, the pipeline is archived instead of deleted
+  on `terraform destroy`. Defaults to `false`.
+
+```hcl
+resource "concourse_pipeline" "my_pipeline" {
+  team_name     = "main"
+  pipeline_name = "my-pipeline"
+
+  is_exposed         = true
+  is_paused          = true
+  archive_on_destroy = true
+
+  pipeline_config        = file("pipeline-config.yml")
+  pipeline_config_format = "yaml"
+
+  vars = {
+    foo = "bar"
+  }
+
+  yaml_vars = {
+    versions = "[1, 2, 3]"
+  }
+}
+```
+
 ## Import
 
 Concourse teams can be imported using the team name e.g.

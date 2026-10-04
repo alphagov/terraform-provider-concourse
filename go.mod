@@ -14,24 +14,17 @@ require (
 require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/trace v1.11.1 // indirect
-	code.cloudfoundry.org/clock v1.16.0 // indirect
-	code.cloudfoundry.org/lager/v3 v3.10.0 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/aryann/difflib v0.0.0-20210328193216-ff5ff6dc229b // indirect
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
-	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/concourse/retryhttp v1.2.4 // indirect
 	github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/jsonapi v1.0.0 // indirect
-	github.com/google/pprof v0.0.0-20241021161924-4cf4322d492d // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -63,9 +56,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/oklog/run v1.0.0 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.2 // indirect
-	github.com/openzipkin/zipkin-go v0.4.3 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/peterhellberg/link v1.2.0 // indirect
 	github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958 // indirect
 	github.com/vito/go-sse v1.1.2 // indirect

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/concourse/concourse/atc"
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -87,6 +88,12 @@ func resourcePipeline() *schema.Resource {
 				Required: true,
 			},
 
+			"archive_on_destroy": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+
 			"pipeline_config_format": &schema.Schema{
 				Type:             schema.TypeString,
 				Required:         true,
@@ -99,6 +106,11 @@ func resourcePipeline() *schema.Resource {
 			},
 
 			"vars": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
+
+			"yaml_vars": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
@@ -153,7 +165,7 @@ func readPipeline(
 
 	team := client.Team(teamName)
 
-	pipeline, pipelineFound, err := team.Pipeline(pipelineName)
+	pipeline, pipelineFound, err := team.Pipeline(atc.PipelineRef{Name: pipelineName})
 
 	if err != nil {
 		return retVal, false, err
@@ -164,7 +176,7 @@ func readPipeline(
 	}
 
 	atcConfig, version, pipelineCfgFound, err := team.PipelineConfig(
-		pipelineName,
+		atc.PipelineRef{Name: pipelineName},
 	)
 
 	if err != nil {
@@ -299,6 +311,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	pipelineConfig := d.Get("pipeline_config").(string)
 	pipelineConfigFormat := d.Get("pipeline_config_format").(string)
 	vars := d.Get("vars").(map[string]interface{})
+	yamlVars := d.Get("yaml_vars").(map[string]interface{})
 
 	pipeline, _, err := readPipeline(ctx, client, teamName, pipelineName)
 
@@ -309,14 +322,14 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		)
 	}
 
-	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat, vars)
+	parsedJSON, err := ParsePipelineConfig(pipelineConfig, pipelineConfigFormat, vars, yamlVars)
 
 	if err != nil {
 		return diag.Errorf("Error parsing pipeline_config: %s", err)
 	}
 
 	_, _, configWarnings, err := team.CreateOrUpdatePipelineConfig(
-		pipelineName, pipeline.ConfigVersion, []byte(parsedJSON), false,
+		atc.PipelineRef{Name: pipelineName}, pipeline.ConfigVersion, []byte(parsedJSON), false,
 	)
 
 	if err != nil {
@@ -339,7 +352,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.Get("is_exposed").(bool) {
-		found, err := team.ExposePipeline(pipelineName)
+		found, err := team.ExposePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return diag.Errorf(
 				"Error exposing pipeline %s in team '%s': %s",
@@ -353,7 +366,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			)
 		}
 	} else {
-		found, err := team.HidePipeline(pipelineName)
+		found, err := team.HidePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return diag.Errorf(
 				"Error hiding pipeline %s in team '%s': %s",
@@ -369,7 +382,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if d.Get("is_paused").(bool) {
-		found, err := team.PausePipeline(pipelineName)
+		found, err := team.PausePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return diag.Errorf(
 				"Error pausing pipeline %s in team '%s': %s",
@@ -383,7 +396,7 @@ func resourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			)
 		}
 	} else {
-		found, err := team.UnpausePipeline(pipelineName)
+		found, err := team.UnpausePipeline(atc.PipelineRef{Name: pipelineName})
 		if err != nil {
 			return diag.Errorf(
 				"Error unpausing pipeline %s in team '%s': %s",
@@ -406,8 +419,29 @@ func resourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m inter
 	pipelineName := d.Get("pipeline_name").(string)
 	teamName := d.Get("team_name").(string)
 	team := client.Team(teamName)
+	ref := atc.PipelineRef{Name: pipelineName}
 
-	deleted, err := team.DeletePipeline(pipelineName)
+	if d.Get("archive_on_destroy").(bool) {
+		archived, err := team.ArchivePipeline(ref)
+
+		if err != nil {
+			return diag.Errorf(
+				"Could not archive pipeline %s from team %s: %s",
+				pipelineName, teamName, err,
+			)
+		}
+
+		if !archived {
+			return diag.Errorf(
+				"Could not archive pipeline %s from team %s", pipelineName, teamName,
+			)
+		}
+
+		d.SetId("")
+		return nil
+	}
+
+	deleted, err := team.DeletePipeline(ref)
 
 	if err != nil {
 		return diag.Errorf(

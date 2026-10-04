@@ -2,10 +2,11 @@ package provider
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/concourse/concourse/go-concourse/concourse"
 	"github.com/concourse/concourse/vars"
 	"github.com/ghodss/yaml"
-	"strings"
 )
 
 // JSONToJSON ensures that keys are ordered, etc, by double converting
@@ -53,12 +54,26 @@ func ParsePipelineConfig(
 	pipelineConfig string,
 	pipelineConfigFormat string,
 	inputVars map[string]interface{},
+	inputYAMLVars map[string]interface{},
 ) (string, error) {
 	var err error
 	outputJSON := ""
 
-	if inputVars != nil {
-		params := []vars.Variables{vars.StaticVariables(inputVars)}
+	staticVars := map[string]interface{}{}
+	for name, value := range inputVars {
+		staticVars[name] = value
+	}
+	// yaml_vars values are YAML documents (fly's --yaml-var), decoded to structured values
+	for name, value := range inputYAMLVars {
+		var parsed interface{}
+		if err := yaml.Unmarshal([]byte(fmt.Sprintf("%v", value)), &parsed); err != nil {
+			return "", fmt.Errorf("could not parse yaml_var %q: %s", name, err)
+		}
+		staticVars[name] = parsed
+	}
+
+	if len(staticVars) > 0 {
+		params := []vars.Variables{vars.StaticVariables(staticVars)}
 		evaluatedConfig, err := vars.NewTemplateResolver([]byte(pipelineConfig), params).Resolve(false, false)
 		if err != nil {
 			return "", err
