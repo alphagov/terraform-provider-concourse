@@ -34,7 +34,7 @@ jobs:
       - name: rm existing terraform
         run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
-      - name: setup
+      - name: setup go
         uses: actions/setup-go@v2
         with:
           go-version: '1.18'
@@ -45,11 +45,14 @@ jobs:
       - name: unit-tests
         run: make unit-tests
 
+      - name: setup docker compose
+        uses: docker/setup-compose-action@v2
+
       - name: ensure-containers-exist
         env:
           CONCOURSE_VERSION: ${{ matrix.concourse-version }}
         run: |
-          docker-compose up -d && docker-compose down
+          docker compose up -d && docker compose down
 
       - name: integration-tests
         env:
