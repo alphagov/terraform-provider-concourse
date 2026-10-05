@@ -32,7 +32,7 @@ jobs:
     steps:
       # avoid confusion around which terraform is being used
       - name: rm existing terraform
-        run: type -P terraform && sudo rm $(type -P terraform)
+        run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
       - name: setup
         uses: actions/setup-go@v2
