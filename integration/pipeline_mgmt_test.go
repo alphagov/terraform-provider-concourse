@@ -159,7 +159,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
@@ -232,7 +232,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
@@ -305,7 +305,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
@@ -381,7 +381,7 @@ jobs:
 					ImportState:             true,
 					ResourceName:            "concourse_pipeline.a_pipeline",
 					ImportStateVerify:       true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "vars"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars", "vars"},
 				},
 
 				resource.TestStep{
@@ -454,7 +454,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
@@ -527,7 +527,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
@@ -600,7 +600,7 @@ jobs:
 					ImportState: true,
 					ResourceName: "concourse_pipeline.a_pipeline",
 					ImportStateVerify: true,
-					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format"},
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
 				resource.TestStep{
