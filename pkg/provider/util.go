@@ -74,7 +74,7 @@ func ParsePipelineConfig(
 
 	if len(staticVars) > 0 {
 		params := []vars.Variables{vars.StaticVariables(staticVars)}
-		evaluatedConfig, err := vars.NewTemplateResolver([]byte(pipelineConfig), params).Resolve(false, false)
+		evaluatedConfig, err := vars.NewTemplateResolver([]byte(pipelineConfig), params).Resolve(false)
 		if err != nil {
 			return "", err
 		}
