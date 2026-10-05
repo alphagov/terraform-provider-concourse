@@ -38,9 +38,9 @@ jobs:
         run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
       - name: setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.18'
+          go-version: '1.27'
 
       - name: checkout
         uses: actions/checkout@v1
