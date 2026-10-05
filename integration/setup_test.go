@@ -43,14 +43,14 @@ func SetupSuite() {
 	Expect(os.Setenv("FLY_USERNAME", concourseUsername)).NotTo(HaveOccurred())
 	Expect(os.Setenv("FLY_PASSWORD", concoursePassword)).NotTo(HaveOccurred())
 
-	buildCmd := exec.Command("docker-compose", "build")
+	buildCmd := exec.Command("docker", "compose", "build")
 	session, err := gexec.Start(buildCmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ShouldNot(HaveOccurred())
 	Eventually(session, 300).Should(gexec.Exit(0))
 }
 
 func SetupTest() {
-	upCmd := exec.Command("docker-compose", "up", "-d", "--force-recreate")
+	upCmd := exec.Command("docker", "compose", "up", "-d", "--force-recreate")
 	session, err := gexec.Start(upCmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ShouldNot(HaveOccurred())
 	Eventually(session, 120).Should(gexec.Exit(0))
@@ -76,7 +76,7 @@ func SetupTest() {
 }
 
 func TeardownTest() {
-	downCmd := exec.Command("docker-compose", "down")
+	downCmd := exec.Command("docker", "compose", "down")
 	session, err := gexec.Start(downCmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ShouldNot(HaveOccurred())
 	Eventually(session, 60).Should(gexec.Exit(0))

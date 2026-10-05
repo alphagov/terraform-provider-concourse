@@ -16,25 +16,28 @@ jobs:
           - "6.7.0"
           - "7.0.0"
           - "7.8.2"
+          - "8.1.1"
+          - "8.2.5"
+          - "8.3.1"
         terraform-version:
           - "1.2"
         include:
           - terraform-version: "0.13"
-            concourse-version: "7.8.2"
+            concourse-version: "8.3.1"
           - terraform-version: "0.14"
-            concourse-version: "7.8.2"
+            concourse-version: "8.3.1"
           - terraform-version: "0.15"
-            concourse-version: "7.8.2"
+            concourse-version: "8.3.1"
           - terraform-version: "1.0"
-            concourse-version: "7.8.2"
+            concourse-version: "8.3.1"
           - terraform-version: "1.1"
-            concourse-version: "7.8.2"
+            concourse-version: "8.3.1"
     steps:
       # avoid confusion around which terraform is being used
       - name: rm existing terraform
-        run: type -P terraform && sudo rm $(type -P terraform)
+        run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
-      - name: setup
+      - name: setup go
         uses: actions/setup-go@v2
         with:
           go-version: '1.18'
@@ -45,11 +48,14 @@ jobs:
       - name: unit-tests
         run: make unit-tests
 
+      - name: setup docker compose
+        uses: docker/setup-compose-action@v2
+
       - name: ensure-containers-exist
         env:
           CONCOURSE_VERSION: ${{ matrix.concourse-version }}
         run: |
-          docker-compose up -d && docker-compose down
+          docker compose up -d && docker compose down
 
       - name: integration-tests
         env:
