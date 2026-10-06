@@ -52,7 +52,7 @@ jobs:
           echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
 
       - id: upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.compile.outputs.zip_name }}
           path: ./${{ steps.compile.outputs.zip_name }}
@@ -69,7 +69,7 @@ jobs:
           PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
       - name: download-artifacts
         id: download-artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           path: artifacts/
       - name: gather-hash-sign
@@ -89,13 +89,13 @@ jobs:
           cat all_artifacts.json >> $GITHUB_OUTPUT
       - name: upload-hash-file-artifact
         id: upload-hash-file-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}
       - name: upload-signature-artifact
         id: upload-signature-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
@@ -126,7 +126,7 @@ jobs:
     steps:
       - name: download-artifact
         id: download-artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: ${{ matrix.artifact }}
 
