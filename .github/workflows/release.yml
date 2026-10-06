@@ -52,7 +52,7 @@ jobs:
           echo "::set-output name=zip_name::$ZIP_NAME"
 
       - id: upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # actions/upload-artifact@v4.6.2
         with:
           name: ${{ steps.compile.outputs.zip_name }}
           path: ./${{ steps.compile.outputs.zip_name }}
@@ -69,7 +69,7 @@ jobs:
           PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
       - name: download-artifacts
         id: download-artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # actions/download-artifact@v4.3.0
         with:
           path: artifacts/
       - name: gather-hash-sign
@@ -89,13 +89,13 @@ jobs:
           cat all_artifacts.json
       - name: upload-hash-file-artifact
         id: upload-hash-file-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # actions/upload-artifact@v4.6.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}
       - name: upload-signature-artifact
         id: upload-signature-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # actions/upload-artifact@v4.6.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
@@ -126,7 +126,7 @@ jobs:
     steps:
       - name: download-artifact
         id: download-artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # actions/download-artifact@v4.3.0
         with:
           name: ${{ matrix.artifact }}
 
