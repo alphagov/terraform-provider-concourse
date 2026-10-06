@@ -89,7 +89,7 @@ jobs:
 			Providers: providers,
 
 			Steps: []resource.TestStep{
-				resource.TestStep{
+				{
 					// Add a pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -154,15 +154,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Pause and expose the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -227,15 +227,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Unpause and hide the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -300,15 +300,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Add variables to the configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -376,7 +376,7 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
 					ImportState:             true,
 					ResourceName:            "concourse_pipeline.a_pipeline",
@@ -384,7 +384,7 @@ jobs:
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars", "vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Update the pipeline configuration
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -449,15 +449,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Move a pipeline from one team to another
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -522,15 +522,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Rename the pipeline
 
 					Config: fmt.Sprintf(`data "concourse_team" "main_team" {
@@ -595,15 +595,15 @@ jobs:
 					),
 				},
 
-				resource.TestStep{
+				{
 					// check this state is importable
-					ImportState: true,
-					ResourceName: "concourse_pipeline.a_pipeline",
-					ImportStateVerify: true,
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.a_pipeline",
+					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
 				},
 
-				resource.TestStep{
+				{
 					// Delete the pipeline
 
 					Config: `data "concourse_team" "main_team" {
@@ -678,6 +678,146 @@ jobs:
 					return nil
 				},
 			),
+		})
+	})
+
+	It("should archive a pipeline on destroy when archive_on_destroy is true", func() {
+		providers := map[string]*schema.Provider{
+			"concourse": provider.Provider(),
+		}
+
+		client, err := NewConcourseClient()
+		Expect(err).NotTo(HaveOccurred())
+
+		const archivePipelineConfig = `#
+resources:
+  - name: every-midnight
+    type: time
+    source:
+      location: Europe/London
+      start: 12:00AM
+      stop: 12:15AM
+
+jobs:
+  - name: check-the-time
+    serial: true
+    plan:
+    - get: every-midnight
+      trigger: true
+`
+
+		resource.Test(NewGinkoTerraformTestingT(), resource.TestCase{
+			IsUnitTest: false,
+			Providers:  providers,
+			Steps: []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+resource "concourse_pipeline" "archive_test" {
+  team_name     = "main"
+  pipeline_name = "archive-test-pipeline"
+
+  is_exposed         = false
+  is_paused          = false
+  archive_on_destroy = true
+
+  pipeline_config_format = "yaml"
+  pipeline_config        = <<PIPELINE
+%s
+  PIPELINE
+}`, archivePipelineConfig),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("concourse_pipeline.archive_test", "archive_on_destroy", "true"),
+					),
+				},
+				{
+					// Remove the pipeline resource — archive_on_destroy should archive, not delete
+					Config: `# empty`,
+					Check: resource.ComposeTestCheckFunc(
+						func(s *terraform.State) error {
+							By("Verifying pipeline is archived, not deleted")
+							pipelines, err := client.ListPipelines()
+							Expect(err).NotTo(HaveOccurred())
+							Expect(pipelines).To(HaveLen(1))
+							Expect(pipelines[0].Name).To(Equal("archive-test-pipeline"))
+							Expect(pipelines[0].Archived).To(BeTrue())
+							return nil
+						},
+					),
+				},
+			},
+		})
+	})
+
+	It("should apply yaml_vars as structured list values", func() {
+		providers := map[string]*schema.Provider{
+			"concourse": provider.Provider(),
+		}
+
+		client, err := NewConcourseClient()
+		Expect(err).NotTo(HaveOccurred())
+
+		const yamlVarsPipelineConfig = `#
+jobs:
+  - name: matrix-job
+    plan:
+      - across:
+        - var: version
+          values: ((versions))
+        task: run
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source: {repository: busybox}
+          run:
+            path: echo
+            args: ["((.:version))"]
+`
+
+		resource.Test(NewGinkoTerraformTestingT(), resource.TestCase{
+			IsUnitTest: false,
+			Providers:  providers,
+			Steps: []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+resource "concourse_pipeline" "yaml_vars_test" {
+  team_name     = "main"
+  pipeline_name = "yaml-vars-test-pipeline"
+
+  is_exposed = false
+  is_paused  = true
+
+  pipeline_config_format = "yaml"
+  pipeline_config        = <<PIPELINE
+%s
+  PIPELINE
+
+  yaml_vars = {
+    versions = "- \"1.0\"\n- \"2.0\"\n"
+  }
+}`, yamlVarsPipelineConfig),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("concourse_pipeline.yaml_vars_test", "pipeline_name", "yaml-vars-test-pipeline"),
+						func(s *terraform.State) error {
+							By("Verifying pipeline with yaml_vars across-step values applied successfully")
+							pipelines, err := client.ListPipelines()
+							Expect(err).NotTo(HaveOccurred())
+							names := make([]string, len(pipelines))
+							for i, p := range pipelines {
+								names[i] = p.Name
+							}
+							Expect(names).To(ContainElement("yaml-vars-test-pipeline"))
+							return nil
+						},
+					),
+				},
+				{
+					ImportState:             true,
+					ResourceName:            "concourse_pipeline.yaml_vars_test",
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"pipeline_config", "pipeline_config_format", "archive_on_destroy", "yaml_vars"},
+				},
+			},
 		})
 	})
 })
