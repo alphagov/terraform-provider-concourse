@@ -130,6 +130,10 @@ Specify users and groups by prefixing the strings:
 * `user:`
 * `group:`
 
+The value after the prefix is the connector-qualified identity, so any Concourse
+auth connector works (e.g. `github`, `oidc`, `ldap`, `saml`). Entries not
+starting with `user:` or `group:` are rejected by the provider.
+
 ```hcl
 resource "concourse_team" "my_team" {
   team_name = "my-team"
@@ -138,6 +142,9 @@ resource "concourse_team" "my_team" {
     "group:github:org-name",
     "group:github:org-name:team-name",
     "user:github:tlwr",
+    "group:oidc:platform-admins",
+    "user:ldap:alice",
+    "group:saml:sso-admins",
   ]
 
   viewers = [
@@ -159,17 +166,36 @@ resource "concourse_pipeline" "my_pipeline" {
   pipeline_config        = file("pipeline-config.yml")
   pipeline_config_format = "yaml"
 }
+```
 
-# OR
+### Optional pipeline arguments
 
+* `vars` — map of string values interpolated into `((var))` placeholders
+  (equivalent to `fly set-pipeline --var`).
+* `yaml_vars` — map whose values are YAML documents, interpolated as structured
+  values (equivalent to `fly set-pipeline --yaml-var`). Useful for list/map
+  vars such as a var-sourced `across` step's `values`.
+* `archive_on_destroy` — when `true`, the pipeline is archived instead of
+  deleted on `terraform destroy`. Defaults to `false`.
+
+```hcl
 resource "concourse_pipeline" "my_pipeline" {
   team_name     = "main"
   pipeline_name = "my-pipeline"
 
-  is_exposed = true
-  is_paused  = true
+  is_exposed         = true
+  is_paused          = true
+  archive_on_destroy = true
 
-  pipeline_config        = file("pipeline-config.json")
-  pipeline_config_format = "json"
+  pipeline_config        = file("pipeline-config.yml")
+  pipeline_config_format = "yaml"
+
+  vars = {
+    environment = "production"
+  }
+
+  yaml_vars = {
+    versions = "[1, 2, 3]"
+  }
 }
 ```
