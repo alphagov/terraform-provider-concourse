@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"reflect"
 	"testing"
 )
@@ -33,7 +34,7 @@ func getTeamStateDataV1() map[string]interface{} {
 
 func TestTeamStateUpgradeV0(t *testing.T) {
 	expected := getTeamStateDataV1()
-	actual, err := resourceTeamStateUpgradeV0(nil, getTeamStateDataV0(), nil)
+	actual, err := resourceTeamStateUpgradeV0(context.TODO(), getTeamStateDataV0(), nil)
 
 	if err != nil {
 		t.Fatalf("error migrating state: %s", err)

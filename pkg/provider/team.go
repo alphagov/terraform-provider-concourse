@@ -279,11 +279,20 @@ func resourceTeamCreateUpdate(ctx context.Context, d *schema.ResourceData, m int
 		for _, terraformInput := range d.Get(terraformRoleName).(*schema.Set).List() {
 			roleEnabled[role] = true
 			authline = strings.Split(terraformInput.(string), ":")
+			identity := strings.Join(authline[1:], ":")
 			switch authline[0] {
 			case "user":
-				auths[role+"_users"] = append(auths[role+"_users"], strings.Join(authline[1:], ":"))
+				if identity == "" {
+					return diag.Errorf("Invalid %s entry %q: expected user:<connector>:<id> (e.g. user:ldap:alice, user:saml:alice)", terraformRoleName, terraformInput.(string))
+				}
+				auths[role+"_users"] = append(auths[role+"_users"], identity)
 			case "group":
-				auths[role+"_groups"] = append(auths[role+"_groups"], strings.Join(authline[1:], ":"))
+				if identity == "" {
+					return diag.Errorf("Invalid %s entry %q: expected group:<connector>:<group> (e.g. group:ldap:admins, group:saml:admins)", terraformRoleName, terraformInput.(string))
+				}
+				auths[role+"_groups"] = append(auths[role+"_groups"], identity)
+			default:
+				return diag.Errorf("Invalid %s entry %q: must be prefixed with 'user:' or 'group:'", terraformRoleName, terraformInput.(string))
 			}
 		}
 	}

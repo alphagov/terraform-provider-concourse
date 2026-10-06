@@ -38,18 +38,18 @@ jobs:
         run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
       - name: setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # actions/setup-go@v7.0.0
         with:
-          go-version: '1.18'
+          go-version: '1.27'
 
       - name: checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
 
       - name: unit-tests
         run: make unit-tests
 
       - name: setup docker compose
-        uses: docker/setup-compose-action@v2
+        uses: docker/setup-compose-action@54042514f505b273907334ae2b9cdbb9a0213c1a # docker/setup-compose-action@v2.4.0
 
       - name: ensure-containers-exist
         env:
