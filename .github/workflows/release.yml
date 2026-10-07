@@ -103,6 +103,9 @@ jobs:
       all_artifacts_json: ${{ steps.gather-hash-sign.outputs.all_artifacts_json }}
 
   create-release:
+    permissions:
+      packages: write
+      contents: write
     runs-on: ubuntu-latest
     needs: build
     steps:
