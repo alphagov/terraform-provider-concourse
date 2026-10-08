@@ -16,12 +16,8 @@ jobs:
     steps:
       - id: get-tag-name-step
         run: |
-          export TAG_NAME="${GITHUB_REF/refs\/tags\//}"
-          export RAW_VERSION="${TAG_NAME##v}"
-          echo "::set-output name=tag_name::${TAG_NAME}"
-          echo "::set-output name=raw_version::${RAW_VERSION}"
+          echo "raw_version=${GITHUB_REF_NAME##v}" >> $GITHUB_OUTPUT
     outputs:
-      tag_name: ${{ steps.get-tag-name-step.outputs.tag_name }}
       raw_version: ${{ steps.get-tag-name-step.outputs.raw_version }}
 
   build:
@@ -49,10 +45,10 @@ jobs:
           GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" make
           mv terraform-provider-concourse $BINARY_NAME
           zip $ZIP_NAME $BINARY_NAME
-          echo "::set-output name=zip_name::$ZIP_NAME"
+          echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
 
       - id: upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.compile.outputs.zip_name }}
           path: ./${{ steps.compile.outputs.zip_name }}
@@ -69,7 +65,7 @@ jobs:
           PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSPHRASE }}
       - name: download-artifacts
         id: download-artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           path: artifacts/
       - name: gather-hash-sign
@@ -84,18 +80,18 @@ jobs:
           gpg --batch --local-user E2CE34DCDC76573D80BC35533BA5353D6C041A26 --detach-sign $HASH_FILE_NAME
           popd
           find gathered/ -type f -printf '%f\n' | jq --raw-input -c --slurp '.[:-1] | split("\n")' > all_artifacts.json
-          echo "::set-output name=hash_file_name::$HASH_FILE_NAME"
-          echo -n "::set-output name=all_artifacts_json::"
-          cat all_artifacts.json
+          echo "hash_file_name=${HASH_FILE_NAME}" >> $GITHUB_OUTPUT
+          echo -n "all_artifacts_json=" >> $GITHUB_OUTPUT
+          cat all_artifacts.json >> $GITHUB_OUTPUT
       - name: upload-hash-file-artifact
         id: upload-hash-file-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}
       - name: upload-signature-artifact
         id: upload-signature-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
           path: ./gathered/${{ steps.gather-hash-sign.outputs.hash_file_name }}.sig
@@ -108,12 +104,10 @@ jobs:
     steps:
       - name: create-release
         id: create-release
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # actions/create-release@v1.1.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
     outputs:
       release_upload_url: ${{ steps.create-release.outputs.upload_url }}
 
@@ -126,7 +120,7 @@ jobs:
     steps:
       - name: download-artifact
         id: download-artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: ${{ matrix.artifact }}
 
@@ -135,15 +129,15 @@ jobs:
         env:
           ARTIFACT_NAME: ${{ matrix.artifact }}
         run: |
-          echo -n '::set-output name=content_type::'
+          echo -n 'content_type=' >> $GITHUB_OUTPUT
           if [[ ${ARTIFACT_NAME##*.} = 'zip' ]] ; then
-            echo 'application/zip'
+            echo 'application/zip' >> $GITHUB_OUTPUT
           elif [[ ${ARTIFACT_NAME##*.} = 'sig' ]] ; then
-            echo 'application/pgp-signature'
+            echo 'application/pgp-signature' >> $GITHUB_OUTPUT
           else
-            echo 'text/plain'
+            echo 'text/plain' >> $GITHUB_OUTPUT
           fi
-          
+
       - name: upload-release-asset
         uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # actions/upload-release-asset@v1.0.2
         env:
