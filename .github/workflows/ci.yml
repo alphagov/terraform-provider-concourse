@@ -20,7 +20,7 @@ jobs:
           - "8.2.5"
           - "8.3.1"
         terraform-version:
-          - "1.2"
+          - "1.16"
         include:
           - terraform-version: "0.13"
             concourse-version: "8.3.1"
@@ -31,6 +31,12 @@ jobs:
           - terraform-version: "1.0"
             concourse-version: "8.3.1"
           - terraform-version: "1.1"
+            concourse-version: "8.3.1"
+          - terraform-version: "1.5"
+            concourse-version: "8.3.1"
+          - terraform-version: "1.7"
+            concourse-version: "8.3.1"
+          - terraform-version: "1.12"
             concourse-version: "8.3.1"
     steps:
       # avoid confusion around which terraform is being used
