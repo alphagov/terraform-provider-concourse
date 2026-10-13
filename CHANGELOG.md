@@ -1,5 +1,13 @@
 ## Changelog
 
+### 8.1.2
+
+- Bump terraform-plugin-sdk to v2.40.1, test against more terraform versions.
+
+### 8.1.1
+
+- Only release pipeline changes.
+
 ### 8.1.0
 
 #### New features
@@ -53,6 +61,10 @@
 - `archive_on_destroy` and `yaml_vars` added to `ImportStateVerifyIgnore` in all
   relevant integration specs, as these attributes have no server-side
   representation and therefore cannot round-trip through `terraform import`.
+
+### 8.0.1
+
+- Only release pipeline changes.
 
 ### 8.0.0
 
