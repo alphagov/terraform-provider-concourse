@@ -1,5 +1,23 @@
 ## Changelog
 
+### 8.2.0
+
+#### Security
+
+- Require Go 1.27.3 and use the module Go version in CI and release builds to
+  reject the compromised eMudhra intermediate certificate chains
+  ([GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809)). Existing provider
+  binaries must be replaced with a release built using the patched toolchain.
+
+- Update `golang.org/x/net` to v0.60.0 and `google.golang.org/grpc` to
+  v1.83.2 to address the HTTP/2 and gRPC findings reported by govulncheck.
+
+#### Dependencies
+
+- Pin the Concourse client to the v8.3.2 release commit `b188e99f7aa0`,
+  using its canonical Go pseudo-version because the release still declares
+  the unversioned `github.com/concourse/concourse` module path.
+
 ### 8.1.2
 
 - Bump terraform-plugin-sdk to v2.40.1, test against more terraform versions.

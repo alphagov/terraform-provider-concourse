@@ -19,37 +19,38 @@ jobs:
           - "8.1.1"
           - "8.2.5"
           - "8.3.1"
+          - "8.3.2"
         terraform-version:
           - "1.16"
         include:
           - terraform-version: "0.13"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "0.14"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "0.15"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "1.0"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "1.1"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "1.5"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "1.7"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
           - terraform-version: "1.12"
-            concourse-version: "8.3.1"
+            concourse-version: "8.3.2"
     steps:
       # avoid confusion around which terraform is being used
       - name: rm existing terraform
         run: "{ type -P terraform && sudo rm $(type -P terraform) ; } || true"
 
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
+
       - name: setup go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # actions/setup-go@v7.0.0
         with:
-          go-version: '1.27'
-
-      - name: checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
+          go-version-file: go.mod
 
       - name: unit-tests
         run: make unit-tests
